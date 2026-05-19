@@ -19,3 +19,8 @@ dist
 .idea
 .vscode
 *.swp
+
+# playwright
+test-results
+playwright-report
+playwright/.cache

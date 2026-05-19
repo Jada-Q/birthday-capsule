@@ -29,6 +29,9 @@ const params = new URLSearchParams(location.search);
 const FORCE_BIRTHDAY = params.has("dev");
 const DEBUG = params.has("debug");
 const FAKE_YEAR = params.get("year");
+// ?bypass=1 — for E2E smoke tests: skip cam/mic/face-match, tap-to-blow only.
+// Production flow is unaffected.
+const BYPASS = params.has("bypass");
 
 // --- DOM mounts ---
 const cakeMount = document.getElementById("cake-mount") as HTMLDivElement;
@@ -254,6 +257,14 @@ async function runBirthdayMode(): Promise<void> {
 async function enterFaceMatchPhase(): Promise<void> {
   setUI(`<div class="status-text">warming up the lens</div>`);
 
+  // E2E bypass: skip cam/mic/face — straight to blow phase (tap-only path).
+  if (BYPASS) {
+    const fakeVideo = document.getElementById("cam") as HTMLVideoElement;
+    const fakeStream = new MediaStream();
+    await enterBlowPhase(fakeVideo, new Float32Array(128), fakeStream, fakeStream);
+    return;
+  }
+
   const video = document.getElementById("cam") as HTMLVideoElement;
   let stream: MediaStream;
   let videoOnlyStream: MediaStream;
@@ -402,11 +413,31 @@ async function enterBlowPhase(
 
   setUI(`
     <div class="blow-prompt">blow it out.</div>
-    <p class="blow-hint">${isTouch ? "tap the cake ↑" : "or click the cake if you're shy"}</p>
+    <p class="blow-hint">${isTouch || BYPASS ? "tap the cake ↑" : "or click the cake if you're shy"}</p>
   `);
   setCakeClickable(true, () => {
     if (cakeLit) blowOutCake();
   });
+
+  // E2E bypass: no mic detector, no face-api tick. Tap-to-blow only.
+  // A lightweight watcher polls cakeLit and fires the post-blow cleanup.
+  if (BYPASS) {
+    const watcher = window.setInterval(() => {
+      if (!cakeLit) {
+        clearInterval(watcher);
+        renderBalloons(true);
+        setCakeClickable(false);
+        setUI(`
+          <div class="hero-title"><em>39.</em></div>
+          <p class="hero-sub">that's a wrap on thirty-eight. now leave a note for next year.</p>
+          <button id="write-btn" class="btn btn--yellow">write the letter</button>
+        `);
+        const writeBtn = document.getElementById("write-btn") as HTMLButtonElement;
+        writeBtn.addEventListener("click", () => void enterCapsulePhase());
+      }
+    }, 100);
+    return;
+  }
 
   const blow: BlowDetector = createBlowDetector({
     micThreshold: isTouch ? 0.06 : 0.12,

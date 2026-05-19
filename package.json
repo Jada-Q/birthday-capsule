@@ -7,9 +7,12 @@
     "dev": "vite --port 3020 --host",
     "build": "vite build",
     "preview": "vite preview --port 3020",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.11"
   },
