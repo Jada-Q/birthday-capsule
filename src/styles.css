@@ -137,6 +137,7 @@ body::before {
   padding: 28px clamp(20px, 4vw, 64px) 32px;
   position: relative;
   z-index: 1;
+  gap: 24px;
 }
 
 .page-header {
@@ -144,6 +145,7 @@ body::before {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  width: 100%;
 }
 
 .wordmark {
@@ -156,7 +158,7 @@ body::before {
   flex-direction: column;
   align-items: flex-start;
 }
-.wordmark__row { font-size: clamp(1.6rem, 3.2vw, 2.2rem); }
+.wordmark__row { font-size: clamp(1.6rem, 3.4vw, 2.6rem); }
 .wordmark__pip {
   display: inline-block;
   width: 7px; height: 7px;
@@ -185,13 +187,16 @@ body::before {
   margin-top: 4px;
 }
 
-main {
+/* The stage section is the middle grid row — it stretches full width and
+   centers its own children (cake + UI cluster). */
+.page-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 72px;
   padding: 32px 24px 48px;
+  width: 100%;
 }
 
 /* Cake card has 16px drop shadow + tilt — visual extent exceeds box.
@@ -855,7 +860,38 @@ textarea.bc-textarea:focus {
 
 /* ----- Responsive ----- */
 @media (max-width: 720px) {
-  .page-header { flex-direction: column; }
-  #app { padding: 22px 18px; }
-  .header-meta { text-align: left; }
+  #app { padding: 22px 18px; gap: 16px; }
+  .page-header {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .header-meta {
+    text-align: right;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+  }
+  .header-meta__sub { font-size: 0.78rem; }
+  .wordmark__row { font-size: 1.5rem; }
+  .page-stage { gap: 40px; padding: 12px 0 32px; }
+  .cake-stage { width: min(320px, 78vmin); margin-bottom: 12px; }
+  .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
+  .hero-sub { font-size: 0.95rem; }
+  .blow-prompt { font-size: clamp(2.4rem, 11vw, 4rem); }
+  .page-footer { font-size: 0.85rem; flex-wrap: wrap; gap: 8px; }
+  .page-footer__right { font-size: 0.72rem; }
+  /* Music toggle smaller on mobile so it doesn't crowd */
+  .music-toggle { font-size: 0.72rem; padding: 8px 12px 8px 8px; }
+  .music-toggle__icon { width: 18px; height: 18px; font-size: 0.75rem; }
+  /* Balloons less prominent on small screens */
+  .bg-balloon { width: 60px; height: 200px; opacity: 0.85; }
+}
+
+@media (max-width: 440px) {
+  .page-header { gap: 8px; }
+  .wordmark__row { font-size: 1.3rem; }
+  .header-meta { font-size: 0.65rem; }
+  .header-meta__sub { font-size: 0.7rem; }
+  /* Hide only most-edge balloons on tiny screens */
+  .bg-balloon:nth-of-type(n+5) { display: none; }
 }
