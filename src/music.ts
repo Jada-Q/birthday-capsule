@@ -29,6 +29,8 @@ export interface MusicController {
   stop(): void;
   isPlaying(): boolean;
   toggle(): boolean; // returns new isPlaying state
+  /** Resume if suspended (iOS deactivates audio session when mic stream closes). */
+  resume(): Promise<void>;
 }
 
 export function createMusic(): MusicController {
@@ -123,7 +125,14 @@ export function createMusic(): MusicController {
     return isPlaying();
   }
 
-  return { start, stop, isPlaying, toggle };
+  async function resume(): Promise<void> {
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+      try { await ctx.resume(); } catch {/* gesture window may be gone */}
+    }
+  }
+
+  return { start, stop, isPlaying, toggle, resume };
 }
 
 /** Attach a music toggle button to the DOM (bottom-right pill). */

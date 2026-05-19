@@ -409,6 +409,9 @@ async function enterBlowPhase(
       priorAllOut = true;
       blow.stop();
       stopAllStreams(stream);
+      // iOS deactivates the shared audio session when mic stream closes;
+      // explicitly nudge the music context so it keeps playing through the celebration.
+      void music.resume();
       renderBalloons(true); // celebratory balloons
       setCakeClickable(false);
       setUI(`
