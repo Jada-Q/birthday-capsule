@@ -265,11 +265,24 @@ async function enterFaceMatchPhase(): Promise<void> {
 
   const video = document.getElementById("cam") as HTMLVideoElement;
   let stream: MediaStream;
+  let videoOnlyStream: MediaStream;
+  let audioOnlyStream: MediaStream;
   try {
-    // Request camera + mic in ONE prompt — avoids the second permission popup
-    // mid-ritual (when transitioning from face match to blow detection).
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    video.srcObject = stream;
+    // Request camera + mic in ONE prompt. Disable AGC/noise/echo so blowing
+    // bursts aren't dampened by the audio pipeline.
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
+    });
+    // Split into separate streams: iOS Safari conflicts when the same audio track
+    // is consumed by <video> AND an AudioContext analyser simultaneously.
+    videoOnlyStream = new MediaStream(stream.getVideoTracks());
+    audioOnlyStream = new MediaStream(stream.getAudioTracks());
+    video.srcObject = videoOnlyStream;
     await video.play();
   } catch {
     setUI(`<div class="modal-status is-error">camera or mic blocked — refresh and allow access</div>`);
@@ -326,7 +339,7 @@ async function enterFaceMatchPhase(): Promise<void> {
   });
 
   await showPriorCapsulesIfAny();
-  await enterBlowPhase(video, refEmbedding, stream);
+  await enterBlowPhase(video, refEmbedding, stream, audioOnlyStream);
 }
 
 async function showPriorCapsulesIfAny(): Promise<void> {
@@ -389,6 +402,7 @@ async function enterBlowPhase(
   video: HTMLVideoElement,
   refEmbedding: Float32Array,
   stream: MediaStream,
+  audioStream: MediaStream,
 ): Promise<void> {
   // iOS Safari & touch devices: face-api landmark detection is too flaky
   // for pucker AND auto-AGC squashes mic bursts. So make tap-to-blow the
@@ -410,9 +424,7 @@ async function enterBlowPhase(
   });
 
   try {
-    // Reuse the audio track from the combined stream acquired in enterFaceMatchPhase
-    // (no second permission prompt).
-    const audioStream = new MediaStream(stream.getAudioTracks());
+    // Reuse the audio-only stream passed in from enterFaceMatchPhase (single permission prompt).
     await blow.start(audioStream);
   } catch {
     setUI(`<div class="modal-status is-error">mic blocked — refresh and allow access</div>`);
