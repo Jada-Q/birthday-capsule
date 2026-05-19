@@ -373,18 +373,23 @@ async function enterBlowPhase(
   refEmbedding: Float32Array,
   stream: MediaStream,
 ): Promise<void> {
+  // iOS Safari & touch devices: face-api landmark detection is too flaky
+  // for pucker AND auto-AGC squashes mic bursts. So make tap-to-blow the
+  // primary path; mic detection still runs as a bonus with looser thresholds.
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
   setUI(`
     <div class="blow-prompt">blow it out.</div>
-    <p class="blow-hint">or click the cake if you're shy</p>
+    <p class="blow-hint">${isTouch ? "tap the cake ↑" : "or click the cake if you're shy"}</p>
   `);
   setCakeClickable(true, () => {
     if (cakeLit) blowOutCake();
   });
 
   const blow: BlowDetector = createBlowDetector({
-    micThreshold: 0.12,
+    micThreshold: isTouch ? 0.06 : 0.12,
     cooldownMs: 350,
-    requireFaceMouth: true,
+    requireFaceMouth: !isTouch, // mobile: skip pucker entirely, rely on mic + tap
   });
 
   try {

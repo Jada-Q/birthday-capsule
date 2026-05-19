@@ -201,6 +201,12 @@ export function createBlowDetector(opts: BlowDetectorOptions = {}): BlowDetector
       window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     audioCtx = new Ctor();
 
+    // iOS Safari often creates AudioContext in "suspended" state even after
+    // user gesture chain — explicit resume() unblocks the analyser samples.
+    if (audioCtx.state === "suspended") {
+      try { await audioCtx.resume(); } catch {/* user gesture window may have lapsed */}
+    }
+
     sourceNode = audioCtx.createMediaStreamSource(stream);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 1024;
