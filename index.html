@@ -16,20 +16,51 @@
     <!-- Paper grain overlay (SVG noise) -->
     <div class="paper-grain" aria-hidden="true"></div>
 
-    <!-- Rising balloon ambient layer -->
+    <!-- SVG shape definitions for balloons (3 variants: round, oval, heart) + 3 string curve variants -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <!-- Balloon SHAPES (body + highlight + knot) drawn at origin (30, 38). -->
+        <g id="shape-round">
+          <ellipse cx="30" cy="38" rx="26" ry="30" fill="currentColor" stroke="#1a1410" stroke-width="3"/>
+          <ellipse cx="22" cy="28" rx="7" ry="10" fill="rgba(255,255,255,0.55)" transform="rotate(-18 22 28)"/>
+          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
+        </g>
+        <g id="shape-oval">
+          <ellipse cx="30" cy="36" rx="22" ry="32" fill="currentColor" stroke="#1a1410" stroke-width="3"/>
+          <ellipse cx="22" cy="26" rx="6" ry="11" fill="rgba(255,255,255,0.55)" transform="rotate(-18 22 26)"/>
+          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
+        </g>
+        <g id="shape-heart">
+          <!-- Heart balloon centered at (30, 38), spanning roughly 12..48 horizontally and 12..68 vertically -->
+          <path d="M30,68 C 4,46 14,12 30,28 C 46,12 56,46 30,68 Z" fill="currentColor" stroke="#1a1410" stroke-width="3" stroke-linejoin="round"/>
+          <ellipse cx="22" cy="26" rx="5" ry="8" fill="rgba(255,255,255,0.55)" transform="rotate(-20 22 26)"/>
+          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
+        </g>
+
+        <!-- Curvy STRINGS (anchored at knot bottom 30,74; descend to ~y=215). 3 variants. -->
+        <path id="string-a" d="M30,74 Q 14,95 32,125 Q 46,155 26,185 Q 10,205 32,215"
+              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
+        <path id="string-b" d="M30,74 Q 46,98 22,128 Q 8,158 34,188 Q 48,205 28,215"
+              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
+        <path id="string-c" d="M30,74 Q 24,100 38,130 Q 22,160 30,190 Q 38,205 30,215"
+              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
+      </defs>
+    </svg>
+
+    <!-- Rising balloon ambient layer. Each balloon = shape + string composed via <use>. -->
     <div class="balloons" aria-hidden="true">
-      <div class="balloon b1"></div>
-      <div class="balloon b2"></div>
-      <div class="balloon b3"></div>
-      <div class="balloon b4"></div>
-      <div class="balloon b5"></div>
-      <div class="balloon b6"></div>
-      <div class="balloon b7"></div>
-      <div class="balloon b8"></div>
-      <div class="balloon b9"></div>
-      <div class="balloon b10"></div>
-      <div class="balloon b11"></div>
-      <div class="balloon b12"></div>
+      <div class="balloon b1"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-a"/></svg></div>
+      <div class="balloon b2"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-b"/></svg></div>
+      <div class="balloon b3"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-c"/></svg></div>
+      <div class="balloon b4"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-b"/></svg></div>
+      <div class="balloon b5"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-a"/></svg></div>
+      <div class="balloon b6"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-b"/></svg></div>
+      <div class="balloon b7"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-c"/></svg></div>
+      <div class="balloon b8"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-a"/></svg></div>
+      <div class="balloon b9"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-c"/></svg></div>
+      <div class="balloon b10"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-b"/></svg></div>
+      <div class="balloon b11"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-c"/></svg></div>
+      <div class="balloon b12"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-a"/></svg></div>
     </div>
 
     <!-- Dense doodle wallpaper — 20 scatter symbols -->

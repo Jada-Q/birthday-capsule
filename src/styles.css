@@ -72,7 +72,7 @@ body {
 }
 
 /* ============================================================
-   RISING BALLOONS — ambient ascending bg layer
+   RISING BALLOONS — SVG with curvy strings + sway, doodle aesthetic match
    ============================================================ */
 .balloons {
   position: fixed;
@@ -82,39 +82,21 @@ body {
   z-index: 1;
 }
 
+/* Outer = vertical rise + horizontal drift; inner svg = gentle sway rotation */
 .balloon {
   position: absolute;
-  bottom: -120px;
-  width: 38px;
-  height: 46px;
-  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.85) 0%, var(--c) 38%, var(--cd) 100%);
-  border: 3px solid var(--ink);
-  border-radius: 50% 50% 50% 50% / 56% 56% 44% 44%;
-  animation: balloon-rise var(--dur, 16s) linear infinite;
+  bottom: -240px;
+  width: 60px;          /* svg viewBox is 60×220 */
+  height: 220px;
+  animation: balloon-rise var(--dur, 18s) linear infinite;
 }
-/* Balloon knot + string */
-.balloon::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 7px;
-  height: 9px;
-  background: var(--c);
-  border: 1.5px solid var(--ink);
-  transform: translateX(-50%);
-  clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
-}
-.balloon::after {
-  content: "";
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  width: 1.5px;
-  height: 100px;
-  background: var(--ink);
-  transform: translateX(-50%) rotate(var(--string-tilt, 3deg));
-  transform-origin: top center;
+.balloon-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform-origin: 50% 18%; /* pivot near balloon body, not string */
+  animation: balloon-sway var(--sway, 3.2s) ease-in-out infinite;
+  color: var(--c);            /* feeds fill="currentColor" inside svg */
 }
 
 @keyframes balloon-rise {
@@ -122,23 +104,28 @@ body {
   6%   { opacity: 1; }
   50%  { transform: translateY(-55vh) translateX(calc(var(--drift, 30px) * 1)); }
   94%  { opacity: 1; }
-  100% { transform: translateY(-115vh) translateX(0); opacity: 0; }
+  100% { transform: translateY(-118vh) translateX(0); opacity: 0; }
 }
 
-/* 12 balloons — varied positions / colors / sizes / durations / delays.
+@keyframes balloon-sway {
+  0%, 100% { transform: rotate(-6deg); }
+  50%      { transform: rotate(6deg); }
+}
+
+/* 12 balloons — varied positions, colors, sizes, sway speeds, drifts.
    Negative animation-delay starts them mid-flight so the sky isn't empty on load. */
-.b1  { left: 4%;   --c:#e83a30; --cd:#b8261e; --dur:18s; --drift: 30px;  animation-delay: 0s;     }
-.b2  { left: 12%;  --c:#ff85a8; --cd:#d04068; --dur:22s; --drift:-25px;  animation-delay: -4s;    transform: scale(0.8); }
-.b3  { left: 22%;  --c:#ffd028; --cd:#c8a410; --dur:16s; --drift: 35px;  animation-delay: -9s;    }
-.b4  { left: 32%;  --c:#3f86e6; --cd:#2c5fa8; --dur:24s; --drift:-30px;  animation-delay: -2s;    transform: scale(1.1); }
-.b5  { left: 42%;  --c:#42b54e; --cd:#2d7a36; --dur:19s; --drift: 28px;  animation-delay: -12s;   transform: scale(0.7); }
-.b6  { left: 52%;  --c:#ff8030; --cd:#c85820; --dur:21s; --drift:-22px;  animation-delay: -6s;    }
-.b7  { left: 62%;  --c:#b478ff; --cd:#7c4cc8; --dur:17s; --drift: 32px;  animation-delay: -14s;   transform: scale(0.9); }
-.b8  { left: 72%;  --c:#e83a30; --cd:#b8261e; --dur:23s; --drift:-26px;  animation-delay: -1s;    }
-.b9  { left: 82%;  --c:#3f86e6; --cd:#2c5fa8; --dur:20s; --drift: 28px;  animation-delay: -10s;   transform: scale(0.85); }
-.b10 { left: 90%;  --c:#ff85a8; --cd:#d04068; --dur:18s; --drift:-32px;  animation-delay: -16s;   }
-.b11 { left: 16%;  --c:#42b54e; --cd:#2d7a36; --dur:25s; --drift: 24px;  animation-delay: -7s;    transform: scale(0.75); }
-.b12 { left: 66%;  --c:#ffd028; --cd:#c8a410; --dur:23s; --drift:-28px;  animation-delay: -18s;   transform: scale(0.95); }
+.b1  { left: 3%;  --c:#e83a30; --dur:20s; --drift: 30px; --sway:3.4s; animation-delay:  0s;  }
+.b2  { left: 12%; --c:#ff85a8; --dur:24s; --drift:-25px; --sway:3.8s; animation-delay: -4s;  width: 48px; height: 176px; }
+.b3  { left: 22%; --c:#ffd028; --dur:18s; --drift: 35px; --sway:2.8s; animation-delay: -9s;  }
+.b4  { left: 32%; --c:#3f86e6; --dur:26s; --drift:-30px; --sway:4.2s; animation-delay: -2s;  width: 66px; height: 242px; }
+.b5  { left: 42%; --c:#42b54e; --dur:21s; --drift: 28px; --sway:3.0s; animation-delay: -12s; width: 42px; height: 154px; }
+.b6  { left: 52%; --c:#ff8030; --dur:23s; --drift:-22px; --sway:3.6s; animation-delay: -6s;  }
+.b7  { left: 62%; --c:#b478ff; --dur:19s; --drift: 32px; --sway:3.2s; animation-delay: -14s; width: 54px; height: 198px; }
+.b8  { left: 72%; --c:#e83a30; --dur:25s; --drift:-26px; --sway:4.0s; animation-delay: -1s;  }
+.b9  { left: 82%; --c:#3f86e6; --dur:22s; --drift: 28px; --sway:3.4s; animation-delay: -10s; width: 50px; height: 184px; }
+.b10 { left: 91%; --c:#ff85a8; --dur:20s; --drift:-32px; --sway:2.6s; animation-delay: -16s; }
+.b11 { left: 18%; --c:#42b54e; --dur:27s; --drift: 24px; --sway:4.4s; animation-delay: -7s;  width: 44px; height: 162px; }
+.b12 { left: 68%; --c:#ffd028; --dur:25s; --drift:-28px; --sway:3.2s; animation-delay: -18s; }
 
 /* ============================================================
    DENSE DOODLE SCATTER — emojis, symbols, dash-line accents, handwritten phrases
