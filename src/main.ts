@@ -105,34 +105,25 @@ let cakeLit = true;
 let cakeAge: string = AGE_BEFORE;
 let cakeClickHandler: (() => void) | null = null;
 
-// Mount the full cake DOM exactly once (img stays in place across state changes).
-function mountCake(): void {
-  cakeMount.innerHTML = `
-    <div class="cake-stage" id="cake-stage-el">
-      <div class="cake-stage__age" id="cake-age" aria-hidden="true">${cakeAge}</div>
-      <div class="painting" id="painting-el">
-        <img src="/assets/cake-painted.png" alt="birthday cake oil painting" draggable="false" />
-        <div class="painting__glow" id="painting-glow" aria-hidden="true"></div>
-        <div class="painting__sparks" id="painting-sparks" aria-hidden="true">
-          <span class="spark spark--1"></span>
-          <span class="spark spark--2"></span>
-          <span class="spark spark--3"></span>
-          <span class="spark spark--4"></span>
-          <span class="spark spark--5"></span>
-        </div>
-        <svg class="painting__smoke" id="painting-smoke" viewBox="0 0 100 100" aria-hidden="true" style="display:none">
-          <g opacity="0.85" style="animation: smoke-drift 2.4s ease-in-out infinite">
-            <ellipse cx="50" cy="22" rx="4" ry="5" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-            <ellipse cx="56" cy="12" rx="3.5" ry="4" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-            <ellipse cx="48" cy="4" rx="2.5" ry="3" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-          </g>
-        </svg>
-      </div>
-    </div>
-  `;
-  // Permanent delegated click handler — actual logic in cakeClickHandler ref.
+// Cake DOM is INLINED in index.html — browser starts img download during HTML
+// parse (no JS-driven mount = no flash of empty cream frame). Here we only:
+//   1. Attach a permanent delegated click listener
+//   2. Reveal the painting (opacity 0 → 1) once the img is decoded
+function initCake(): void {
   const stage = document.getElementById("cake-stage-el");
   stage?.addEventListener("click", () => cakeClickHandler?.());
+
+  const painting = document.getElementById("painting-el");
+  const img = painting?.querySelector("img");
+  if (!painting || !img) return;
+  const reveal = () => painting.classList.add("is-ready");
+  if (img.complete && img.naturalWidth > 0) {
+    // Already decoded (preload/cache) — reveal next frame to avoid layout race
+    requestAnimationFrame(reveal);
+  } else {
+    img.addEventListener("load", reveal, { once: true });
+    img.addEventListener("error", reveal, { once: true }); // fail-open so user isn't stuck
+  }
 }
 
 /**
@@ -225,7 +216,7 @@ function autoStartMusicOnce(): void {
 }
 
 // --- BOOT ---
-mountCake();
+initCake();
 renderBalloons(false);
 
 function runDailyMode(): void {

@@ -275,9 +275,13 @@ body::before {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  /* Hide the broken-image icon if PNG fails to load */
   min-height: 60px;
+  /* Painting starts invisible — JS adds .is-ready when img has decoded.
+     Prevents flash of empty cream frame + caption-only state. */
+  opacity: 0;
+  transition: opacity 220ms ease;
 }
+.painting.is-ready { opacity: 1; }
 .painting img {
   display: block;
   width: 100%;

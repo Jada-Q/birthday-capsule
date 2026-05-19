@@ -28,8 +28,39 @@
       </header>
 
       <section id="stage" class="page-stage">
-        <!-- Cake painting + age digit (rendered by main.ts based on scene) -->
-        <div id="cake-mount"></div>
+        <!-- Cake painting — inlined in HTML so the browser starts image
+             download/decode immediately during initial parse (no JS round-trip,
+             no flash of empty cream frame). main.ts only attaches the click
+             listener + toggles dormant/lit/blown state via classes. -->
+        <div id="cake-mount">
+          <div class="cake-stage" id="cake-stage-el">
+            <div class="cake-stage__age" id="cake-age" aria-hidden="true">38</div>
+            <div class="painting" id="painting-el">
+              <img
+                src="/assets/cake-painted.png"
+                alt="birthday cake oil painting"
+                draggable="false"
+                decoding="sync"
+                fetchpriority="high"
+              />
+              <div class="painting__glow" id="painting-glow" aria-hidden="true" style="display:none"></div>
+              <div class="painting__sparks" id="painting-sparks" aria-hidden="true" style="display:none">
+                <span class="spark spark--1"></span>
+                <span class="spark spark--2"></span>
+                <span class="spark spark--3"></span>
+                <span class="spark spark--4"></span>
+                <span class="spark spark--5"></span>
+              </div>
+              <svg class="painting__smoke" id="painting-smoke" viewBox="0 0 100 100" aria-hidden="true" style="display:none">
+                <g opacity="0.85" style="animation: smoke-drift 2.4s ease-in-out infinite">
+                  <ellipse cx="50" cy="22" rx="4" ry="5" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+                  <ellipse cx="56" cy="12" rx="3.5" ry="4" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+                  <ellipse cx="48" cy="4" rx="2.5" ry="3" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
         <!-- Transient UI: button / status / hero copy (rendered by main.ts) -->
         <div id="ui"></div>
       </section>
