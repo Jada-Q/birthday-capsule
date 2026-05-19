@@ -266,11 +266,13 @@ async function enterFaceMatchPhase(): Promise<void> {
   const video = document.getElementById("cam") as HTMLVideoElement;
   let stream: MediaStream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    // Request camera + mic in ONE prompt — avoids the second permission popup
+    // mid-ritual (when transitioning from face match to blow detection).
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     video.srcObject = stream;
     await video.play();
   } catch {
-    setUI(`<div class="modal-status is-error">camera blocked — refresh and allow access</div>`);
+    setUI(`<div class="modal-status is-error">camera or mic blocked — refresh and allow access</div>`);
     return;
   }
 
@@ -408,7 +410,10 @@ async function enterBlowPhase(
   });
 
   try {
-    await blow.start();
+    // Reuse the audio track from the combined stream acquired in enterFaceMatchPhase
+    // (no second permission prompt).
+    const audioStream = new MediaStream(stream.getAudioTracks());
+    await blow.start(audioStream);
   } catch {
     setUI(`<div class="modal-status is-error">mic blocked — refresh and allow access</div>`);
     return;

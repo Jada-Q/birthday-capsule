@@ -17,7 +17,8 @@ export interface BlowDetectorOptions {
 }
 
 export interface BlowDetector {
-  start(): Promise<void>;
+  /** Optionally pass a pre-acquired audio MediaStream — otherwise getUserMedia is called. */
+  start(audioStream?: MediaStream): Promise<void>;
   stop(): void;
   onBlow(handler: () => void): void;
   updateFaceLandmarks(landmarks: unknown | null): void;
@@ -190,10 +191,21 @@ export function createBlowDetector(opts: BlowDetectorOptions = {}): BlowDetector
     }
   }
 
-  async function start(): Promise<void> {
+  // Track whether we owned the MediaStream (got it ourselves) vs the caller
+  // passed us a pre-acquired one. Only own-streams get .stop()'d in stop().
+  let ownsMediaStream = false;
+
+  async function start(audioStream?: MediaStream): Promise<void> {
     if (audioCtx) return; // idempotent
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    let stream: MediaStream;
+    if (audioStream && audioStream.getAudioTracks().length > 0) {
+      stream = audioStream;
+      ownsMediaStream = false;
+    } else {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      ownsMediaStream = true;
+    }
     mediaStream = stream;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -233,10 +245,14 @@ export function createBlowDetector(opts: BlowDetectorOptions = {}): BlowDetector
     analyser = null;
     timeBuf = null;
     if (mediaStream) {
-      for (const track of mediaStream.getTracks()) {
-        track.stop();
+      // Only stop tracks we ourselves acquired — the caller owns lifecycle of any stream they passed.
+      if (ownsMediaStream) {
+        for (const track of mediaStream.getTracks()) {
+          track.stop();
+        }
       }
       mediaStream = null;
+      ownsMediaStream = false;
     }
     if (audioCtx) {
       audioCtx.close().catch(() => {
