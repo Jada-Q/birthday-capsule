@@ -1,132 +1,706 @@
+/* ============================================================
+   BIRTHDAY CAPSULE — Storybook Postcard
+   Aesthetic: chunky cartoon, buttercream paper, thick black outlines,
+   handwritten warmth, push-button shadows. Matches the cake's hand-drawn vibe.
+   ============================================================ */
+
 :root {
-  --bg: #0a0a0f;
-  --warm: #ffb060;
-  --text: #e8e0d0;
-  --dim: #5a5450;
-  --accent: #ff8050;
+  /* Palette */
+  --cream: #fdf4d8;
+  --cream-deep: #f4e4b6;
+  --paper-tint: #fffaea;
+  --ink: #1a1410;
+  --ink-soft: #3a2e22;
+  --ink-faint: #8a7860;
+  --cherry: #c8302a;
+  --cherry-deep: #882018;
+  --mint: #bee0c4;
+  --mint-deep: #88b89a;
+  --pink: #f6c0d0;
+  --pink-deep: #d09aae;
+  --mario-yellow: #f7d030;
+  --mario-blue: #3f86e6;
+
+  /* Typography */
+  --font-display: "Lilita One", "Arial Black", system-ui, sans-serif;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+  --font-body: "Fraunces", "Iowan Old Style", "Georgia", serif;
+
+  /* Push-button shadow (offset-x offset-y blur color) */
+  --btn-shadow: 5px 5px 0 0 var(--ink);
+  --btn-shadow-pressed: 2px 2px 0 0 var(--ink);
+  --card-shadow: 8px 8px 0 0 var(--ink);
+
+  /* Easings */
+  --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  overflow: hidden;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+html,
+body {
+  min-height: 100vh;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  /* Soft cream→deep-cream radial — like a paper page under warm light */
+  background-image:
+    radial-gradient(ellipse at center top, var(--paper-tint) 0%, var(--cream) 50%, var(--cream-deep) 110%);
+  background-attachment: fixed;
+}
+
+/* ============================================================
+   PAPER GRAIN — subtle noise over everything for warmth
+   ============================================================ */
+.paper-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.10;
+  mix-blend-mode: multiply;
+  z-index: 1;
+  /* Inline SVG noise — works without external assets */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ============================================================
+   DECORATIVE SCATTER — corner ornaments
+   ============================================================ */
+.scatter {
+  position: fixed;
+  font-family: var(--font-display);
+  color: var(--ink);
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.85;
+  animation: scatter-in 1.4s var(--bounce) backwards;
+}
+.scatter--tl { top: 24px; left: 28px; font-size: 32px; transform: rotate(-15deg); animation-delay: 0.2s; }
+.scatter--tr { top: 36px; right: 32px; color: var(--cherry); transform: rotate(8deg); animation-delay: 0.4s; }
+.scatter--bl { bottom: 28px; left: 36px; font-size: 18px; color: var(--mario-blue); animation-delay: 0.6s; }
+.scatter--br { bottom: 32px; right: 28px; font-size: 24px; color: var(--mint-deep); transform: rotate(12deg); animation-delay: 0.8s; }
+
+@keyframes scatter-in {
+  from { opacity: 0; transform: translateY(-20px) rotate(-45deg); }
+}
+
+/* ============================================================
+   HEADER — wordmark
+   ============================================================ */
+.page-header {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: 36px 24px 8px;
+  animation: header-drop 0.8s var(--bounce);
+}
+
+.wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.88;
+  font-family: var(--font-display);
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+  /* Hard offset shadow that mimics the Mario-style cake digits */
+  text-shadow: 4px 4px 0 var(--ink);
+  color: var(--cherry);
+}
+
+.wordmark__top {
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+  transform: rotate(-2deg);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+}
+
+.wordmark__bot {
+  font-size: clamp(3rem, 8.5vw, 5rem);
+  color: var(--mario-blue);
+  transform: rotate(1.5deg) translateY(-4px);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--ink);
+}
+
+.tagline {
+  margin-top: 14px;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  color: var(--ink-soft);
+  transform: rotate(-1deg);
+}
+
+@keyframes header-drop {
+  from { opacity: 0; transform: translateY(-30px); }
+}
+
+/* ============================================================
+   MAIN STAGE — cake canvas + UI panel
+   ============================================================ */
 #app {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 24px;
+  padding: 8px 24px 32px;
+}
+
+.cake-stage {
   position: relative;
+  animation: stage-rise 1s var(--bounce) 0.3s backwards;
 }
 
 #stage {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  width: min(640px, 90vmin);
-  height: min(640px, 90vmin);
-  background: radial-gradient(ellipse at center, #1a1418 0%, var(--bg) 80%);
+  display: block;
+  width: min(560px, 88vmin);
+  height: min(560px, 88vmin);
+  /* Canvas itself is transparent — paper bg shows through */
+  background: transparent;
 }
 
+@keyframes stage-rise {
+  from { opacity: 0; transform: translateY(40px) scale(0.92); }
+}
+
+/* ============================================================
+   UI PANEL — buttons + transient status under the cake
+   ============================================================ */
 #ui {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  min-height: 56px;
+  animation: fade-in 0.5s ease-out;
 }
 
-button {
-  background: transparent;
-  border: 1px solid var(--warm);
-  color: var(--warm);
-  padding: 10px 24px;
-  font-family: inherit;
-  font-size: 14px;
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--ink);
+  background: var(--mario-yellow);
+  border: 3px solid var(--ink);
+  padding: 14px 28px;
+  border-radius: 14px;
   cursor: pointer;
+  box-shadow: var(--btn-shadow);
+  transition: transform 0.12s var(--bounce), box-shadow 0.12s ease;
+  position: relative;
+}
+
+.btn-primary:hover {
+  transform: translate(-2px, -2px) rotate(-1deg);
+  box-shadow: 7px 7px 0 0 var(--ink);
+}
+.btn-primary:active {
+  transform: translate(3px, 3px) rotate(0deg);
+  box-shadow: var(--btn-shadow-pressed);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--btn-shadow-pressed);
+}
+
+.btn-primary--pink { background: var(--pink); }
+.btn-primary--mint { background: var(--mint); }
+.btn-primary--cherry { background: var(--cherry); color: var(--cream); }
+
+.btn-secondary {
+  font-family: var(--font-hand);
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+.btn-secondary:hover { color: var(--cherry); }
+
+.ui-hint {
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  text-align: center;
+  max-width: 320px;
+  transform: rotate(-0.5deg);
+}
+
+.ui-status {
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  color: var(--cherry);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.ui-blow-prompt {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--cherry);
+  animation: bob 1.2s ease-in-out infinite;
+  text-shadow: 3px 3px 0 var(--ink);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
   letter-spacing: 0.05em;
 }
 
-button:hover { background: rgba(255, 176, 96, 0.1); }
-button:disabled { opacity: 0.3; cursor: not-allowed; }
-
-textarea {
-  background: transparent;
-  border: 1px solid var(--dim);
-  color: var(--text);
-  padding: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  width: min(480px, 80vw);
-  min-height: 80px;
-  resize: vertical;
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
 }
 
-textarea:focus { outline: none; border-color: var(--warm); }
+.ui-error {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--cherry);
+  background: var(--cream);
+  border: 3px solid var(--cherry);
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 360px;
+}
 
+/* ============================================================
+   FOOTER — handwritten meta
+   ============================================================ */
 #footer {
-  position: absolute;
-  bottom: 16px;
-  font-size: 11px;
-  color: var(--dim);
-  letter-spacing: 0.1em;
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: 20px 24px 36px;
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.01em;
+  min-height: 28px;
 }
 
+/* ============================================================
+   MODAL — oversized cream card with thick black border
+   ============================================================ */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(26, 20, 16, 0.62);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  z-index: 10;
+  z-index: 100;
+  animation: modal-back 0.35s ease-out;
+  overflow-y: auto;
+}
+
+@keyframes modal-back {
+  from { background: rgba(26, 20, 16, 0); }
 }
 
 .modal-content {
-  max-width: 600px;
+  background: var(--paper-tint);
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  padding: 36px 32px;
+  max-width: 560px;
   width: 100%;
-  background: #14101a;
-  border: 1px solid var(--warm);
-  padding: 32px;
+  position: relative;
+  box-shadow: var(--card-shadow);
+  animation: modal-pop 0.5s var(--bounce);
+  /* Faint paper texture inside the card too */
+  background-image:
+    radial-gradient(ellipse at top, #fff 0%, var(--paper-tint) 80%);
+}
+
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.85) rotate(-2deg) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) rotate(0) translateY(0); }
+}
+
+/* Washi-tape corner accents on every modal */
+.modal-content::before,
+.modal-content::after {
+  content: "";
+  position: absolute;
+  width: 80px;
+  height: 22px;
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.modal-content::before {
+  top: -10px;
+  left: 28px;
+  transform: rotate(-4deg);
+  background: var(--mint);
+}
+.modal-content::after {
+  top: -10px;
+  right: 28px;
+  transform: rotate(5deg);
+  background: var(--mario-yellow);
+}
+
+.modal-eyebrow {
+  font-family: var(--font-hand);
+  font-size: 1.2rem;
+  color: var(--cherry);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+  line-height: 1;
+}
+
+.modal-title em {
+  font-style: normal;
+  color: var(--mario-blue);
+  display: inline-block;
+  transform: rotate(-2deg);
+  font-size: 1.1em;
+  margin: 0 4px;
+}
+
+.prompt-block {
+  margin-bottom: 22px;
 }
 
 .prompt-label {
-  font-size: 12px;
-  color: var(--dim);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  display: block;
+  font-family: var(--font-hand);
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
 }
 
-.prompt-block { margin-bottom: 20px; }
+.prompt-label__num {
+  display: inline-block;
+  font-family: var(--font-display);
+  background: var(--cherry);
+  color: var(--cream);
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid var(--ink);
+  font-size: 0.9rem;
+  transform: translateY(-2px);
+}
+.prompt-label__num--2 { background: var(--mario-yellow); color: var(--ink); }
+.prompt-label__num--3 { background: var(--mint); color: var(--ink); }
 
-/* setup page */
+textarea {
+  width: 100%;
+  background: var(--cream);
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--ink);
+  min-height: 64px;
+  resize: vertical;
+  line-height: 1.45;
+  /* Faint ruled-paper baseline */
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      rgba(63, 134, 230, 0.12) 27px,
+      rgba(63, 134, 230, 0.12) 28px
+    );
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--cherry);
+  box-shadow: 4px 4px 0 0 var(--ink);
+  transform: translate(-2px, -2px);
+  transition: transform 0.15s var(--bounce);
+}
+
+.recorder-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-record {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 0 var(--ink);
+  transition: transform 0.12s var(--bounce), box-shadow 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-record .dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cherry);
+  border: 1.5px solid var(--ink);
+}
+.btn-record:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 var(--ink); }
+.btn-record:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 0 var(--ink); }
+.btn-record.recording .dot { animation: rec-pulse 0.8s ease-in-out infinite; }
+
+@keyframes rec-pulse {
+  0%, 100% { background: var(--cherry); }
+  50% { background: var(--cream); }
+}
+
+.rec-status {
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+audio {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.modal-status {
+  font-family: var(--font-hand);
+  font-size: 1rem;
+  color: var(--ink-faint);
+  flex: 1;
+  min-width: 120px;
+}
+.modal-status.is-error { color: var(--cherry); }
+
+/* Sealed confirmation card */
+.sealed-card {
+  text-align: center;
+  padding: 12px 8px;
+}
+.sealed-card__icon {
+  font-size: 4rem;
+  display: inline-block;
+  animation: sealed-bounce 0.7s var(--bounce);
+  margin-bottom: 12px;
+}
+.sealed-card__title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--ink);
+  margin-bottom: 8px;
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+  color: var(--cherry);
+}
+.sealed-card__sub {
+  font-family: var(--font-hand);
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+}
+.sealed-card__link {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  word-break: break-all;
+  display: inline-block;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+.sealed-card__link:hover { color: var(--cherry); }
+
+@keyframes sealed-bounce {
+  0% { transform: scale(0) rotate(-30deg); }
+  60% { transform: scale(1.2) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Prior-capsule readback */
+.prior-quote {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink);
+  line-height: 1.5;
+  padding: 10px 14px;
+  background: var(--cream);
+  border-left: 4px solid var(--cherry);
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+.prior-block { margin-bottom: 18px; }
+.prior-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-hand);
+  color: var(--ink-faint);
+  font-size: 1rem;
+}
+
+/* ============================================================
+   SETUP PAGE
+   ============================================================ */
 #setup-app {
-  padding: 48px;
+  padding: 60px 32px;
   max-width: 800px;
   margin: 0 auto;
 }
-
-#setup-app h1 { color: var(--warm); margin-bottom: 16px; }
-#setup-app p { color: var(--text); margin-bottom: 16px; }
-
-#preview img { max-width: 320px; margin: 16px 0; }
-
-pre {
-  background: #14101a;
-  border: 1px solid var(--dim);
+#setup-app h1 {
+  font-family: var(--font-display);
+  color: var(--cherry);
+  text-shadow: 3px 3px 0 var(--ink);
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+}
+#setup-app p {
+  font-family: var(--font-body);
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+#setup-app input[type="file"] {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
   padding: 12px;
-  font-size: 11px;
-  max-height: 200px;
+  border: 3px dashed var(--ink);
+  border-radius: 12px;
+  background: var(--paper-tint);
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+#preview img {
+  max-width: 280px;
+  border: 4px solid var(--ink);
+  border-radius: 12px;
+  margin: 18px 0;
+  box-shadow: 6px 6px 0 0 var(--ink);
+}
+#setup-app pre {
+  background: var(--paper-tint);
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: ui-monospace, "DM Mono", monospace;
+  font-size: 0.85rem;
+  max-height: 220px;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-all;
+  color: var(--ink-soft);
+}
+#setup-app button {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  background: var(--mario-yellow);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  padding: 12px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 5px 5px 0 0 var(--ink);
+  margin-top: 12px;
+}
+#setup-app button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   CONFETTI ON SUBMIT (CSS-only burst)
+   ============================================================ */
+.confetti-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 200;
+  inset: 0;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  width: 12px;
+  height: 18px;
+  top: 50vh;
+  left: 50vw;
+  opacity: 0;
+  animation: confetti-fall 2.2s ease-out forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, 100vh)) rotate(var(--dr, 720deg)) scale(1);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .page-header { padding-top: 24px; }
+  .scatter--tl, .scatter--tr, .scatter--bl, .scatter--br { font-size: 18px; }
+  .modal-content { padding: 28px 20px; }
+  .modal-content::before, .modal-content::after { width: 56px; }
+  .ui-blow-prompt { font-size: 1.6rem; }
 }

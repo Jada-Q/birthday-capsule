@@ -3,16 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎂</title>
+    <title>🎂 birthday capsule</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Caveat:wght@400;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
+    <!-- Paper grain overlay (SVG noise) -->
+    <div class="paper-grain" aria-hidden="true"></div>
+
+    <!-- Decorative scatter elements -->
+    <div class="scatter scatter--star scatter--tl" aria-hidden="true">✦</div>
+    <div class="scatter scatter--squiggle scatter--tr" aria-hidden="true">
+      <svg viewBox="0 0 60 20" width="60" height="20"><path d="M2 10 Q 12 0, 22 10 T 42 10 T 58 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="scatter scatter--dot scatter--bl" aria-hidden="true">●</div>
+    <div class="scatter scatter--cross scatter--br" aria-hidden="true">✕</div>
+
+    <header class="page-header">
+      <h1 class="wordmark">
+        <span class="wordmark__top">birthday</span>
+        <span class="wordmark__bot">capsule</span>
+      </h1>
+      <p class="tagline">a once-a-year ritual</p>
+    </header>
+
     <main id="app">
-      <canvas id="stage" width="640" height="640"></canvas>
+      <div class="cake-stage">
+        <canvas id="stage" width="640" height="640"></canvas>
+      </div>
       <div id="ui"></div>
       <video id="cam" autoplay playsinline muted style="display:none"></video>
-      <footer id="footer"></footer>
     </main>
+
+    <footer id="footer"></footer>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
