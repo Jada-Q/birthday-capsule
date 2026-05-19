@@ -130,7 +130,7 @@ export class Cake {
     this.bodyBottomY = S * 0.86;    // bottom rim of cylinder
     this.bodyRx = S * 0.25;          // body half-width
     this.capRy = S * 0.045;          // ellipse cap vertical radius
-    this.mintBandH = S * 0.10;       // mint extends down from top rim by this
+    this.mintBandH = S * 0.045;      // mint band height (shorter — drips look like drops, not stalactites)
 
     this.candleW = S * 0.022;
     this.candleH = S * 0.16;
@@ -318,37 +318,28 @@ export class Cake {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
 
-    // 1. Cylinder body silhouette: left vertical + bottom ellipse front-half + right vertical + top ellipse
+    // Body silhouette: TOP-FRONT arc + LEFT side + BOTTOM-FRONT arc + RIGHT side, single closed path.
+    // ctx.ellipse(cx, cy, rx, ry, 0, startAngle, endAngle, anticlockwise)
+    //   In canvas (y-down), clockwise from 0 → π traces through the BOTTOM of the ellipse (= the FRONT of the cake cylinder).
     ctx.beginPath();
-    ctx.moveTo(cx - rx, topY);
+    // Top ellipse FRONT arc: starts (cx+rx, topY), ends (cx-rx, topY), curves through (cx, topY+ry)
+    ctx.ellipse(cx, topY, rx, ry, 0, 0, Math.PI);
+    // LEFT side down: from (cx-rx, topY) to (cx-rx, botY)
     ctx.lineTo(cx - rx, botY);
-    ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0, true); // front half of bottom ellipse (curving down)
-    // Wait — to draw the visible bottom front curve: arc from (cx-rx, botY) through (cx, botY+ry) to (cx+rx, botY).
-    // ctx.ellipse with anticlockwise from Math.PI to 0 traces top half. We want bottom half.
-    // Reset and use a cleaner approach:
-    ctx.closePath();
-    // (clearing the above sketch — proper path below)
-
-    // Proper body silhouette as a single closed path:
-    ctx.beginPath();
-    // Top rim (back curve to front, but back hidden — we'll paint full ellipse separately later)
-    ctx.ellipse(cx, topY, rx, ry, 0, 0, Math.PI); // top FRONT arc (left → bottom of top ellipse → right)
-    // Down right side
-    ctx.lineTo(cx + rx, botY);
-    // Bottom front arc (right → bottom of bot ellipse → left)
-    ctx.ellipse(cx, botY, rx, ry, 0, 0, Math.PI);
-    // Up left side
-    ctx.lineTo(cx - rx, topY);
+    // Bottom ellipse FRONT arc: from (cx-rx, botY) to (cx+rx, botY) via (cx, botY+ry).
+    // Use anticlockwise=true with π→0 to trace through angle π/2 (= bottom of bot ellipse = visible front).
+    ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0, true);
+    // RIGHT side up: from (cx+rx, botY) back to (cx+rx, topY)
+    ctx.lineTo(cx + rx, topY);
     ctx.closePath();
     ctx.fillStyle = BODY_FILL;
     ctx.fill();
     ctx.stroke();
 
-    // 2. Mint frosting band: top ellipse filled mint + extends down with wavy drip edge
+    // Mint frosting on top (filled ellipse + wavy drip band)
     this.drawMintFrostingWithDrips();
 
-    // 3. Top ellipse (back of cake — fully closed mint ellipse on top, painted AFTER drips so it sits on top)
-    //    Already covered by mint frosting fill above. Now add the visible top rim outline.
+    // Re-outline the top ellipse rim crisply (mint shape and body might leave it muddy)
     ctx.lineWidth = 6;
     ctx.strokeStyle = OUTLINE;
     ctx.beginPath();
@@ -398,57 +389,56 @@ export class Cake {
     ctx.fill();
   }
 
-  // Append (without beginPath/moveTo) a wavy drip line from right to left at given y baseline.
+  // Wavy drip line from right to left at baseline `y`. Drips are short, wide, rounded blobs.
   private tracePathFromRightToLeftWithDrips(y: number): void {
     const ctx = this.ctx;
     const cx = this.bodyCx;
     const rx = this.bodyRx;
-    const dropMax = this.mintBandH * 1.6;
-    // We're already at (cx + rx, y). Walk leftward, dipping for each drip.
-    const seeds = [...this.dripSeeds].reverse(); // right-to-left order
+    const dropMax = this.size * 0.04; // short max drip length (~25px on 640 canvas)
+    const dripW = this.size * 0.045;  // wide blob, ~28px
+    const seeds = [...this.dripSeeds].reverse();
     for (let i = 0; i < seeds.length; i++) {
       const s = seeds[i]!;
-      const xCenter = cx - rx + (1 - s.t) * (rx * 2); // mirror because right-to-left
-      const dripW = 22 * s.w;
-      const dripH = dropMax * s.h;
-      // Walk to drip's right edge
-      ctx.lineTo(xCenter + dripW / 2, y);
-      // Curve down and around the drip tip back up
+      const xCenter = cx - rx + (1 - s.t) * (rx * 2);
+      const w = dripW * s.w;
+      const h = dropMax * (0.4 + s.h * 0.5); // 40%-90% of max — variation, not extremes
+      ctx.lineTo(xCenter + w / 2, y);
+      // Round blob: dip down through tip, back up. Smaller control offsets = rounder shape.
       ctx.bezierCurveTo(
-        xCenter + dripW / 2, y + dripH * 0.6,
-        xCenter + dripW * 0.4, y + dripH,
-        xCenter, y + dripH,
+        xCenter + w / 2, y + h * 0.5,
+        xCenter + w * 0.3, y + h,
+        xCenter, y + h,
       );
       ctx.bezierCurveTo(
-        xCenter - dripW * 0.4, y + dripH,
-        xCenter - dripW / 2, y + dripH * 0.6,
-        xCenter - dripW / 2, y,
+        xCenter - w * 0.3, y + h,
+        xCenter - w / 2, y + h * 0.5,
+        xCenter - w / 2, y,
       );
     }
     ctx.lineTo(cx - rx, y);
   }
 
-  // Same drip shape but traced left-to-right (for stroke).
   private tracePathFromLeftToRightWithDrips(y: number): void {
     const ctx = this.ctx;
     const cx = this.bodyCx;
     const rx = this.bodyRx;
-    const dropMax = this.mintBandH * 1.6;
+    const dropMax = this.size * 0.04;
+    const dripW = this.size * 0.045;
     for (let i = 0; i < this.dripSeeds.length; i++) {
       const s = this.dripSeeds[i]!;
       const xCenter = cx - rx + s.t * (rx * 2);
-      const dripW = 22 * s.w;
-      const dripH = dropMax * s.h;
-      ctx.lineTo(xCenter - dripW / 2, y);
+      const w = dripW * s.w;
+      const h = dropMax * (0.4 + s.h * 0.5);
+      ctx.lineTo(xCenter - w / 2, y);
       ctx.bezierCurveTo(
-        xCenter - dripW / 2, y + dripH * 0.6,
-        xCenter - dripW * 0.4, y + dripH,
-        xCenter, y + dripH,
+        xCenter - w / 2, y + h * 0.5,
+        xCenter - w * 0.3, y + h,
+        xCenter, y + h,
       );
       ctx.bezierCurveTo(
-        xCenter + dripW * 0.4, y + dripH,
-        xCenter + dripW / 2, y + dripH * 0.6,
-        xCenter + dripW / 2, y,
+        xCenter + w * 0.3, y + h,
+        xCenter + w / 2, y + h * 0.5,
+        xCenter + w / 2, y,
       );
     }
     ctx.lineTo(cx + rx, y);
@@ -547,9 +537,9 @@ export class Cake {
     ctx.lineWidth = 5;
     ctx.strokeStyle = OUTLINE;
     ctx.stroke();
-    // Highlight: an oval-ish white sheen on the upper-right lobe
+    // Small round white highlight dot on upper-right lobe
     ctx.beginPath();
-    ctx.ellipse(h.size * 0.30, -h.size * 0.05, h.size * 0.16, h.size * 0.28, -0.4, 0, Math.PI * 2);
+    ctx.arc(h.size * 0.30, -h.size * 0.12, h.size * 0.10, 0, Math.PI * 2);
     ctx.fillStyle = HEART_HIGHLIGHT;
     ctx.fill();
     ctx.restore();
