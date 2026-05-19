@@ -100,82 +100,90 @@ function escapeHtml(s: string): string {
   });
 }
 
-// --- CAKE PAINTING (replaces canvas Cake class) ---
+// --- CAKE PAINTING (mounted ONCE, then toggle classes; never re-render <img>) ---
 let cakeLit = true;
-let cakeClickable = false;
 let cakeAge: string = AGE_BEFORE;
-let onCakeClick: (() => void) | null = null;
+let cakeClickHandler: (() => void) | null = null;
 
-function renderCake(): void {
-  const stageClass = "cake-stage" + (cakeClickable ? " cake-stage--clickable" : "");
-  const paintingClass = "painting" + (cakeLit ? "" : " painting--out");
-  const ariaLabel = cakeClickable ? 'aria-label="blow out the candle" role="button" tabindex="0"' : "";
-
-  const litExtras = cakeLit ? `
-    <div class="painting__glow" aria-hidden="true"></div>
-    <div class="painting__sparks" aria-hidden="true">
-      <span class="spark spark--1"></span>
-      <span class="spark spark--2"></span>
-      <span class="spark spark--3"></span>
-      <span class="spark spark--4"></span>
-      <span class="spark spark--5"></span>
-    </div>
-  ` : "";
-
-  const smoke = cakeLit ? "" : `
-    <svg class="painting__smoke" viewBox="0 0 100 100" aria-hidden="true">
-      <g opacity="0.85" style="animation: smoke-drift 2.4s ease-in-out infinite">
-        <ellipse cx="50" cy="22" rx="4" ry="5" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-        <ellipse cx="56" cy="12" rx="3.5" ry="4" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-        <ellipse cx="48" cy="4" rx="2.5" ry="3" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
-      </g>
-    </svg>
-  `;
-
+// Mount the full cake DOM exactly once (img stays in place across state changes).
+function mountCake(): void {
   cakeMount.innerHTML = `
-    <div class="${stageClass}" ${ariaLabel}>
-      <div class="cake-stage__age" aria-hidden="true">${cakeAge}</div>
-      <div class="${paintingClass}">
+    <div class="cake-stage" id="cake-stage-el">
+      <div class="cake-stage__age" id="cake-age" aria-hidden="true">${cakeAge}</div>
+      <div class="painting" id="painting-el">
         <img src="/assets/cake-painted.png" alt="birthday cake oil painting" draggable="false" />
-        ${litExtras}
-        ${smoke}
+        <div class="painting__glow" id="painting-glow" aria-hidden="true"></div>
+        <div class="painting__sparks" id="painting-sparks" aria-hidden="true">
+          <span class="spark spark--1"></span>
+          <span class="spark spark--2"></span>
+          <span class="spark spark--3"></span>
+          <span class="spark spark--4"></span>
+          <span class="spark spark--5"></span>
+        </div>
+        <svg class="painting__smoke" id="painting-smoke" viewBox="0 0 100 100" aria-hidden="true" style="display:none">
+          <g opacity="0.85" style="animation: smoke-drift 2.4s ease-in-out infinite">
+            <ellipse cx="50" cy="22" rx="4" ry="5" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+            <ellipse cx="56" cy="12" rx="3.5" ry="4" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+            <ellipse cx="48" cy="4" rx="2.5" ry="3" fill="#f5e9c8" stroke="#1a1410" stroke-width="1.5"/>
+          </g>
+        </svg>
       </div>
     </div>
   `;
+  // Permanent delegated click handler — actual logic in cakeClickHandler ref.
+  const stage = document.getElementById("cake-stage-el");
+  stage?.addEventListener("click", () => cakeClickHandler?.());
+}
 
-  if (cakeClickable && onCakeClick) {
-    const stage = cakeMount.querySelector(".cake-stage") as HTMLDivElement;
-    stage.addEventListener("click", onCakeClick);
-  }
+function setCakeLitState(lit: boolean): void {
+  cakeLit = lit;
+  const painting = document.getElementById("painting-el");
+  const glow = document.getElementById("painting-glow");
+  const sparks = document.getElementById("painting-sparks");
+  const smoke = document.getElementById("painting-smoke");
+  if (!painting) return;
+  painting.classList.toggle("painting--out", !lit);
+  if (glow)   glow.style.display   = lit ? "" : "none";
+  if (sparks) sparks.style.display = lit ? "" : "none";
+  if (smoke)  smoke.style.display  = lit ? "none" : "";
 }
 
 function setCakeClickable(clickable: boolean, handler: (() => void) | null = null): void {
-  cakeClickable = clickable;
-  onCakeClick = handler;
-  renderCake();
+  cakeClickHandler = clickable ? handler : null;
+  const stage = document.getElementById("cake-stage-el");
+  if (!stage) return;
+  stage.classList.toggle("cake-stage--clickable", clickable);
+  if (clickable) {
+    stage.setAttribute("role", "button");
+    stage.setAttribute("tabindex", "0");
+    stage.setAttribute("aria-label", "blow out the candle");
+  } else {
+    stage.removeAttribute("role");
+    stage.removeAttribute("tabindex");
+    stage.removeAttribute("aria-label");
+  }
+}
+
+function setCakeAge(age: string): void {
+  cakeAge = age;
+  const ageEl = document.getElementById("cake-age");
+  if (ageEl) ageEl.textContent = age;
 }
 
 function blowOutCake(): void {
   if (!cakeLit) return;
-  cakeLit = false;
-  // Crossfade age digit
-  const ageEl = cakeMount.querySelector(".cake-stage__age") as HTMLElement | null;
-  if (ageEl) {
-    ageEl.style.opacity = "0";
-    setTimeout(() => {
-      cakeAge = AGE_AFTER;
-      renderCake();
-      const newAgeEl = cakeMount.querySelector(".cake-stage__age") as HTMLElement | null;
-      if (newAgeEl) {
-        newAgeEl.style.opacity = "0";
-        requestAnimationFrame(() => {
-          newAgeEl.style.opacity = "0.55";
-        });
-      }
-    }, TRANSITION_MS / 2);
-  } else {
-    renderCake();
-  }
+  setCakeLitState(false);
+  // Crossfade age digit: fade out current → swap text → fade in new value.
+  const ageEl = document.getElementById("cake-age");
+  if (!ageEl) return;
+  ageEl.style.transition = "opacity 600ms ease";
+  ageEl.style.opacity = "0";
+  setTimeout(() => {
+    setCakeAge(AGE_AFTER);
+    requestAnimationFrame(() => {
+      ageEl.style.opacity = "0.55";
+    });
+  }, 600);
 }
 
 // --- BALLOONS (sparse pre-blow, celebratory post-blow) ---
@@ -210,7 +218,7 @@ function autoStartMusicOnce(): void {
 }
 
 // --- BOOT ---
-renderCake();
+mountCake();
 renderBalloons(false);
 
 function runDailyMode(): void {
@@ -218,8 +226,8 @@ function runDailyMode(): void {
   setHeader("DAILY MODE", `${formatDate()} · the cake won't go out today`);
   setFooter(`come back on may 20 · ${days} day${days === 1 ? "" : "s"} to go`);
   setUI("");
-  cakeLit = true;
-  cakeAge = AGE_BEFORE;
+  setCakeLitState(true);
+  setCakeAge(AGE_BEFORE);
   setCakeClickable(false);
   renderBalloons(false);
 }
@@ -227,9 +235,8 @@ function runDailyMode(): void {
 async function runBirthdayMode(): Promise<void> {
   setHeader("BIRTHDAY MODE", `${formatDate()} · today's the day`);
   setFooter("happy birthday ✦");
-  cakeLit = true;
-  cakeAge = AGE_BEFORE;
-  renderCake();
+  setCakeLitState(true);
+  setCakeAge(AGE_BEFORE);
   renderBalloons(false);
 
   setUI(`
@@ -601,9 +608,8 @@ if (params.get("test") === "blow") {
   setTimeout(() => blowOutCake(), 2000);
 }
 if (params.get("test") === "post-blow") {
-  cakeLit = false;
-  cakeAge = AGE_AFTER;
-  renderCake();
+  setCakeLitState(false);
+  setCakeAge(AGE_AFTER);
   renderBalloons(true);
 }
 

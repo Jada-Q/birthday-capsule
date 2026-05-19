@@ -6,6 +6,8 @@
     <title>birthday capsule</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload cake painting so it's decoded before main.ts mounts the DOM -->
+    <link rel="preload" as="image" href="/assets/cake-painted.png" fetchpriority="high" />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
