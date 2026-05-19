@@ -57,18 +57,18 @@ const PX = 4; // logical-px to canvas-px scale (cake drawn at 1/PX resolution, s
 const COLOR_PLATE = "#d0ccc4";
 const COLOR_PLATE_EDGE = "#8a8680";
 
-// Pink frosting (top + drips) — was chocolate, now pink for Image 1 style
-const COLOR_CHOC = "#ef6090";
-const COLOR_CHOC_SHADOW = "#a83064";
-const COLOR_CHOC_HIGHLIGHT = "#ff90b0";
+// Mint frosting (top + drips) — cartoon style
+const COLOR_CHOC = "#b8dcc0";
+const COLOR_CHOC_SHADOW = "#7aae90";
+const COLOR_CHOC_HIGHLIGHT = "#d4ecd8";
 
-// Sponge cake (side stripes)
-const COLOR_SPONGE = "#d8a878";
-const COLOR_SPONGE_SHADOW = "#b08858";
+// Body (cream-white)
+const COLOR_SPONGE = "#fafaf2";
+const COLOR_SPONGE_SHADOW = "#dcd6c8";
 
-// Pink cream filling (side stripes)
-const COLOR_CREAM_PINK = "#ff90a8";
-const COLOR_CREAM_PINK_SHADOW = "#e06888";
+// Pink cream filling (kept for compatibility; now near-white)
+const COLOR_CREAM_PINK = "#f4eee0";
+const COLOR_CREAM_PINK_SHADOW = "#d8d0c0";
 
 // Silhouette outline
 const COLOR_OUTLINE = "#2a1408";
@@ -131,6 +131,8 @@ export class Cake {
 
   // Cherry positions on top tier surface, precomputed.
   private readonly cherries: ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }>;
+  // Cherry positions on bottom tier top surface (around the base of top tier), precomputed.
+  private readonly bottomCherries: ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }>;
 
   constructor(canvas: HTMLCanvasElement, opts: CakeOptions) {
     const ctx = canvas.getContext("2d");
@@ -174,14 +176,20 @@ export class Cake {
     // Place top tier so its bottom rim overlaps bottom tier top by ~2 logical px (folded).
     this.topCy = this.bottomCy - this.bottomRy - this.topH - this.topRy + 2;
 
-    // Candle ring on top tier surface (= top tier center-y - topRy, the upper rim)
-    const ringCy = this.topCy - this.topRy;
-    // Inset slightly so candles aren't on the edge
+    // Candle base sits on the back edge of the top ellipse (looks "planted" in 3/4 view).
+    const candleBaseY = this.topCy - this.topRy;
+    // Cherry ring sits at the CENTER of the top ellipse — all cherries stay within
+    // the visible top surface, none float above the silhouette.
+    const cherryRingCy = this.topCy;
     this.candleRingRx = Math.max(4, this.topRx - 3);
+    // Cherry vertical radius capped to topRy so back-cherries don't exceed top edge.
     this.candleRingRy = Math.max(2, this.topRy - 1);
 
-    this.candles = this.computeCandlePositions(ringCy);
-    this.cherries = this.computeCherries(ringCy);
+    this.candles = this.computeCandlePositions(candleBaseY);
+    this.cherries = this.computeCherries(cherryRingCy);
+    // Bottom-tier cherries: ring around the visible top surface of the bottom tier,
+    // distributed outside the top tier's footprint (don't crowd under the top tier).
+    this.bottomCherries = this.computeBottomCherries();
   }
 
   private computeCandlePositions(ringCy: number): CandlePos[] {
@@ -220,21 +228,41 @@ export class Cake {
     return out;
   }
 
-  private computeCherries(ringCy: number): ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }> {
-    // 7 cherries arranged in a ring on the top surface, slightly outside the candle
-    // ring radius so they sit between candle base and outer edge of the top tier.
+  // Cherries on bottom tier's visible top surface. Skip the back-center (covered by top tier)
+  // and front-center (would be cropped by top tier shadow). Distribute on the sides.
+  private computeBottomCherries(): ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }> {
     const out: { x: number; y: number; stemDir: -1 | 0 | 1 }[] = [];
-    const n = 7;
-    const rx = this.candleRingRx + 1;
-    const ry = this.candleRingRy + 1;
+    const n = 6;
+    // Ring centered on bottom tier's top ellipse center (= bottomCy), inset slightly.
+    const rx = this.bottomRx - 4;
+    const ry = this.bottomRy - 1;
     for (let i = 0; i < n; i++) {
-      // Phase-offset by 0.45 rad so cherries don't sit directly under candle.
-      const theta = -Math.PI / 2 + (i / n) * Math.PI * 2 + 0.45;
-      const x = Math.round(this.topCx + Math.cos(theta) * rx);
-      const y = Math.round(ringCy + Math.sin(theta) * ry);
-      // Stem direction varies a bit
+      // Distribute on the FRONT half of the ring (theta from 0 to π), skipping the back
+      // which is hidden under the top tier.
+      const theta = (i / (n - 1)) * Math.PI; // 0 → π, left side to right side via front
+      const x = Math.round(this.bottomCx - Math.cos(theta) * rx); // left to right
+      const y = Math.round(this.bottomCy + Math.sin(theta) * ry * 0.5); // shallow arc, on top surface
       const sd: -1 | 0 | 1 = (i % 3 === 0 ? -1 : i % 3 === 1 ? 0 : 1);
       out.push({ x, y, stemDir: sd });
+    }
+    return out;
+  }
+
+  private computeCherries(ringCy: number): ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }> {
+    // 3 cherry mounds on top tier — wedding-cake-style stripe stacks with a cherry on top.
+    // Place them on the visible top surface, distributed left / right (skip back where candle sits).
+    const out: { x: number; y: number; stemDir: -1 | 0 | 1 }[] = [];
+    const positions = [
+      { theta: -2.2, sd: -1 as const }, // back-left
+      { theta: 2.2,  sd:  1 as const }, // back-right
+      { theta: Math.PI / 2, sd: 0 as const }, // front-center
+    ];
+    const rx = this.candleRingRx;
+    const ry = this.candleRingRy;
+    for (const p of positions) {
+      const x = Math.round(this.topCx + Math.cos(p.theta) * rx);
+      const y = Math.round(ringCy + Math.sin(p.theta) * ry);
+      out.push({ x, y, stemDir: p.sd });
     }
     return out;
   }
@@ -247,10 +275,12 @@ export class Cake {
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(PX, 0, 0, PX, 0, 0);
 
+    // Background age number — drawn FIRST so cake sits on top of it.
+    this.drawBackgroundNumber(ctx, t);
     this.drawPlate(ctx);
     this.drawBottomTier(ctx);
     this.drawTopTier(ctx);
-    this.drawCherries(ctx);
+    this.drawCherryMounds(ctx);
     this.drawCandlesAndFlames(ctx, t);
     this.drawSmoke(ctx, t);
 
@@ -342,9 +372,7 @@ export class Cake {
       COLOR_CHOC_HIGHLIGHT,
       "top",
     );
-    // Back-rim shadow on top ellipse (thin darker arc near the back) for depth
-    ctx.fillStyle = COLOR_CHOC_SHADOW;
-    ctx.fillRect(cx - rx + 2, topY, Math.max(1, rx * 2 - 4), 1);
+    // (Removed back-rim shadow line — after pink repalette it read as a hard red bar.)
 
     // --- 6. Silhouette outline on left/right edges of side ---
     ctx.fillStyle = COLOR_OUTLINE;
@@ -460,9 +488,78 @@ export class Cake {
     }
   }
 
-  // Cherries on top tier surface. Each cherry: 3×3 red blob with outline + stem.
+  // Cherry mounds on top tier — wedding-cake-style: 4-stripe stack + cherry on top.
+  private drawCherryMounds(ctx: CanvasRenderingContext2D): void {
+    for (const c of this.cherries) this.drawCherryMound(ctx, c.x, c.y, c.stemDir);
+  }
+
+  private drawCherryMound(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    baseY: number,
+    stemDir: -1 | 0 | 1,
+  ): void {
+    // Pyramid stack: 4 stripes tapering up (white / soft beige / white / soft beige)
+    const stripes = [
+      { w: 9, h: 2, color: "#ffffff" },
+      { w: 7, h: 2, color: "#e8e0d0" },
+      { w: 5, h: 2, color: "#ffffff" },
+      { w: 4, h: 1, color: "#e8e0d0" },
+    ];
+    let curY = baseY;
+    for (const s of stripes) {
+      const left = x - Math.floor(s.w / 2);
+      const top = curY - s.h;
+      // Fill
+      ctx.fillStyle = s.color;
+      ctx.fillRect(left, top, s.w, s.h);
+      // Outline on side edges
+      ctx.fillStyle = COLOR_OUTLINE;
+      ctx.fillRect(left - 1, top, 1, s.h);
+      ctx.fillRect(left + s.w, top, 1, s.h);
+      // Bottom outline on each stripe (creates the layered separation)
+      if (s !== stripes[stripes.length - 1]) {
+        ctx.fillRect(left - 1, curY, s.w + 2, 1);
+      }
+      curY -= s.h;
+    }
+    // Stem
+    ctx.fillStyle = COLOR_CHERRY_STEM;
+    ctx.fillRect(x + stemDir, curY - 2, 1, 1);
+    ctx.fillRect(x, curY - 1, 1, 1);
+
+    // Cherry — bigger 5x4 chunky (centered on x, sits at curY)
+    const cyTop = curY;
+    // Outline
+    ctx.fillStyle = COLOR_OUTLINE;
+    ctx.fillRect(x - 1, cyTop, 5, 1);
+    ctx.fillRect(x - 1, cyTop + 3, 5, 1);
+    ctx.fillRect(x - 2, cyTop + 1, 1, 2);
+    ctx.fillRect(x + 4, cyTop + 1, 1, 2);
+    // Body
+    ctx.fillStyle = COLOR_CHERRY;
+    ctx.fillRect(x - 1, cyTop + 1, 5, 2);
+    ctx.fillRect(x, cyTop, 3, 1);
+    ctx.fillRect(x, cyTop + 3, 3, 1);
+    // Shadow on lower-right
+    ctx.fillStyle = COLOR_CHERRY_SHADOW;
+    ctx.fillRect(x + 2, cyTop + 2, 2, 1);
+    ctx.fillRect(x + 1, cyTop + 3, 2, 1);
+    // Highlight
+    ctx.fillStyle = COLOR_CHERRY_HIGHLIGHT;
+    ctx.fillRect(x, cyTop + 1, 1, 1);
+  }
+
   private drawCherries(ctx: CanvasRenderingContext2D): void {
-    for (const c of this.cherries) {
+    this.drawCherriesArray(ctx, this.cherries);
+  }
+
+  // Cherries — chunky red blob with outline + small green stem. Used by both tiers.
+  private drawCherriesArray(
+    ctx: CanvasRenderingContext2D,
+    arr: ReadonlyArray<{ x: number; y: number; stemDir: -1 | 0 | 1 }>,
+  ): void {
+    for (const c of arr) {
       // Stem first (drawn behind body) — small 2-pixel green stem curving away
       ctx.fillStyle = COLOR_CHERRY_STEM;
       ctx.fillRect(c.x + c.stemDir, c.y - 3, 1, 1);
@@ -510,35 +607,27 @@ export class Cake {
         else this.drawFlame(ctx, c.x, c.y - 1, localFrame);
       }
     }
-    // Numeral mode: floating number above flame (or where flame was), with 38→39 transition.
-    if (this.isNumeral && this.candles.length > 0) {
-      const c = this.candles[0]!;
-      this.drawFloatingNumber(ctx, c.x, c.y - this.candleH - 11, t);
-    }
+    // Background-number is drawn separately at the top of render() (behind cake).
   }
 
-  // Renders the age number floating above the flame. Pre-blow: numberLabel ("38").
-  // Post-blow: crossfades to numberLabelAfter ("39") over ~1.2s.
-  private drawFloatingNumber(
+  // Big Mario-style age number rendered as the cake's BACKGROUND (behind plate + cake).
+  // Pre-blow: numberLabel ("38"). Post-blow: crossfades to numberLabelAfter ("39") over ~1.2s.
+  // Per-digit color cycle (red/yellow/green/blue keyed by the digit's value) + thick black
+  // outline + drop shadow for the chunky cartoon look.
+  private drawBackgroundNumber(
     ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
     t: number,
   ): void {
+    if (!this.isNumeral) return;
     const FADE_MS = 600;
-    let labelBefore = this.numberLabel;
-    let labelAfter = this.numberLabelAfter;
     let alphaBefore = 1;
     let alphaAfter = 0;
 
     if (this.blewAt != null) {
       const elapsed = t - this.blewAt;
       if (elapsed < FADE_MS) {
-        // fade out "before"
         alphaBefore = 1 - elapsed / FADE_MS;
-        alphaAfter = 0;
       } else if (elapsed < FADE_MS * 2) {
-        // fade in "after"
         alphaBefore = 0;
         alphaAfter = (elapsed - FADE_MS) / FADE_MS;
       } else {
@@ -547,50 +636,111 @@ export class Cake {
       }
     }
 
+    // Switch to device-px transform for crisp anti-aliased text.
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    const cx = this.size / 2;
+    const cy = this.size * 0.42;
     if (alphaBefore > 0.01) {
       ctx.globalAlpha = alphaBefore;
-      this.drawPixelText(ctx, labelBefore, cx, cy);
+      this.drawMarioText(ctx, this.numberLabel, cx, cy);
     }
     if (alphaAfter > 0.01) {
       ctx.globalAlpha = alphaAfter;
-      this.drawPixelText(ctx, labelAfter, cx, cy);
+      this.drawMarioText(ctx, this.numberLabelAfter, cx, cy);
     }
     ctx.globalAlpha = 1;
+    ctx.restore();
+    // restore() rolls back the transform; render() set PX-transform before this call,
+    // and the next drawPlate() will run with that PX transform.
+    ctx.imageSmoothingEnabled = false;
   }
 
-  // Draws pixel-font text centered horizontally on `cx`, with `cy` as baseline.
-  // Uses a warm glowing color with a 1px dark outline.
-  private drawPixelText(
+  // Chunky Mario-style digits: per-digit color, thick black outline, drop shadow.
+  private drawMarioText(
     ctx: CanvasRenderingContext2D,
     text: string,
     cx: number,
     cy: number,
   ): void {
-    const totalW = text.length * DIGIT_W + (text.length - 1) * DIGIT_SPACING;
-    const startX = cx - Math.floor(totalW / 2);
-    // 1px dark outline around the pixel glyphs (drawn offset in 4 directions)
-    const drawAt = (dx: number, dy: number, color: string) => {
+    const SIZE = 260;
+    const SHADOW_OFFSET = 10;
+    const OUTLINE_WIDTH = 16;
+    const LETTER_SPACING = 6;
+    const SHADOW = "#1a0a04";
+    const OUTLINE = "#1a0a04";
+    // Mario-ish primary palette keyed by digit value.
+    const DIGIT_COLOR: Record<string, string> = {
+      "0": "#e63d3d", "1": "#f7d030", "2": "#42b54e", "3": "#3f86e6",
+      "4": "#e63d3d", "5": "#f7d030", "6": "#42b54e", "7": "#3f86e6",
+      "8": "#e63d3d", "9": "#f7d030",
+    };
+
+    ctx.font = `900 ${SIZE}px Impact, "Arial Black", "Helvetica Neue", system-ui, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+
+    // Measure each char width once.
+    const widths: number[] = [];
+    let totalW = 0;
+    for (const ch of text) {
+      const w = ctx.measureText(ch).width;
+      widths.push(w);
+      totalW += w;
+    }
+    totalW += (text.length - 1) * LETTER_SPACING;
+
+    let x = cx - totalW / 2;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i]!;
+      const color = DIGIT_COLOR[ch] ?? "#e63d3d";
+      // Drop shadow (offset down-right, no outline)
+      ctx.fillStyle = SHADOW;
+      ctx.fillText(ch, x + SHADOW_OFFSET, cy + SHADOW_OFFSET);
+      // Thick black outline
+      ctx.lineWidth = OUTLINE_WIDTH;
+      ctx.strokeStyle = OUTLINE;
+      ctx.strokeText(ch, x, cy);
+      // Color fill
       ctx.fillStyle = color;
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i]!;
-        const glyph = DIGIT_FONT[ch];
-        if (!glyph) continue;
-        const left = startX + i * (DIGIT_W + DIGIT_SPACING);
-        for (let row = 0; row < DIGIT_H; row++) {
-          const line = glyph[row]!;
-          for (let col = 0; col < DIGIT_W; col++) {
-            if (line[col] === "X") ctx.fillRect(left + col + dx, cy + row + dy, 1, 1);
-          }
+      ctx.fillText(ch, x, cy);
+      x += (widths[i] ?? 0) + LETTER_SPACING;
+    }
+  }
+
+  // Draws DIGIT_FONT text scaled up by `scale`. Each glyph cell becomes scale × scale logical px.
+  // Text is centered on (cx, cy).
+  private drawScaledPixelText(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    cx: number,
+    cy: number,
+    scale: number,
+    color: string,
+  ): void {
+    const cellW = DIGIT_W * scale;
+    const cellH = DIGIT_H * scale;
+    const gapPx = DIGIT_SPACING * scale;
+    const totalW = text.length * cellW + (text.length - 1) * gapPx;
+    const startX = cx - Math.floor(totalW / 2);
+    const startY = cy - Math.floor(cellH / 2);
+    ctx.fillStyle = color;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i]!;
+      const glyph = DIGIT_FONT[ch];
+      if (!glyph) continue;
+      const left = startX + i * (cellW + gapPx);
+      for (let row = 0; row < DIGIT_H; row++) {
+        const line = glyph[row]!;
+        for (let col = 0; col < DIGIT_W; col++) {
+          if (line[col] === "X")
+            ctx.fillRect(left + col * scale, startY + row * scale, scale, scale);
         }
       }
-    };
-    // Dark outline
-    drawAt(-1, 0, COLOR_OUTLINE);
-    drawAt(1, 0, COLOR_OUTLINE);
-    drawAt(0, -1, COLOR_OUTLINE);
-    drawAt(0, 1, COLOR_OUTLINE);
-    // Warm fill
-    drawAt(0, 0, FLAME_OUTER_A);
+    }
   }
 
   // Thin tall candle in numeral mode. Body is striped cream/pink like a classic
@@ -628,7 +778,7 @@ export class Cake {
     ctx.fillRect(c.x, top - 2, 1, 2);
   }
 
-  // Larger 2-frame flame for the numeral candle.
+  // 2× larger 2-frame flame for the numeral candle. Bigger drama on a thin candle.
   private drawBigFlame(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -638,21 +788,53 @@ export class Cake {
     const tall = frame === 0;
     const outerColor = tall ? FLAME_OUTER_A : FLAME_OUTER_B;
     const innerColor = tall ? FLAME_INNER_A : FLAME_INNER_B;
-    // outer 5 wide × ~7 tall (tall) / 4 wide × 6 tall (short)
+    // Subtle dark outline for the flame so it pops on light surfaces too
+    const outline = COLOR_OUTLINE;
+
     if (tall) {
+      // Outer: tall teardrop ~9 wide × ~11 tall
+      ctx.fillStyle = outline;
+      // base oval outline
+      ctx.fillRect(x - 4, wickTop - 7, 9, 1);
+      ctx.fillRect(x - 5, wickTop - 6, 1, 5);
+      ctx.fillRect(x + 4, wickTop - 6, 1, 5);
+      ctx.fillRect(x - 4, wickTop - 1, 9, 1);
+      // top taper
+      ctx.fillRect(x - 1, wickTop - 9, 3, 1);
+      ctx.fillRect(x - 2, wickTop - 8, 5, 1);
+      ctx.fillRect(x, wickTop - 11, 1, 2);
+      ctx.fillRect(x - 1, wickTop - 10, 3, 1);
+
       ctx.fillStyle = outerColor;
-      ctx.fillRect(x - 1, wickTop - 5, 3, 5);
-      ctx.fillRect(x - 2, wickTop - 4, 5, 3);
-      ctx.fillRect(x, wickTop - 6, 1, 1);
-      // inner core
+      ctx.fillRect(x - 3, wickTop - 6, 7, 5);   // base body
+      ctx.fillRect(x - 4, wickTop - 5, 9, 3);   // widest band
+      ctx.fillRect(x - 1, wickTop - 8, 3, 2);   // mid taper
+      ctx.fillRect(x, wickTop - 10, 1, 2);      // tip
+
+      // Inner glow core
       ctx.fillStyle = innerColor;
-      ctx.fillRect(x, wickTop - 4, 1, 3);
+      ctx.fillRect(x - 1, wickTop - 5, 3, 4);
+      ctx.fillRect(x, wickTop - 7, 1, 2);
     } else {
+      // Short variant (squatter, fewer rows)
+      ctx.fillStyle = outline;
+      ctx.fillRect(x - 4, wickTop - 5, 9, 1);
+      ctx.fillRect(x - 5, wickTop - 4, 1, 3);
+      ctx.fillRect(x + 4, wickTop - 4, 1, 3);
+      ctx.fillRect(x - 4, wickTop - 1, 9, 1);
+      ctx.fillRect(x - 1, wickTop - 7, 3, 1);
+      ctx.fillRect(x - 2, wickTop - 6, 5, 1);
+      ctx.fillRect(x, wickTop - 8, 1, 1);
+
       ctx.fillStyle = outerColor;
-      ctx.fillRect(x - 1, wickTop - 4, 3, 4);
-      ctx.fillRect(x - 2, wickTop - 3, 5, 2);
+      ctx.fillRect(x - 3, wickTop - 4, 7, 3);
+      ctx.fillRect(x - 4, wickTop - 3, 9, 1);
+      ctx.fillRect(x - 1, wickTop - 6, 3, 2);
+      ctx.fillRect(x, wickTop - 7, 1, 1);
+
       ctx.fillStyle = innerColor;
-      ctx.fillRect(x, wickTop - 3, 1, 2);
+      ctx.fillRect(x - 1, wickTop - 4, 3, 3);
+      ctx.fillRect(x, wickTop - 6, 1, 2);
     }
   }
 
