@@ -463,7 +463,11 @@ async function enterBlowPhase(
         setFooter(`mic=${dbg.micEnergy.toFixed(3)} pucker=${dbg.puckered} open=${dbg.mouthOpen}`);
       }
     } catch {/* transient */}
-    if (cakeLit) setTimeout(() => void tick(), 100);
+    // Always schedule next tick — the cleanup branch above handles termination
+    // (returns early after priorAllOut flips). Previously gated on `cakeLit`,
+    // which broke: blow flips cakeLit→false mid-tick, end-of-tick skips
+    // scheduling, cleanup branch never gets a chance to fire.
+    if (!priorAllOut) setTimeout(() => void tick(), 100);
   };
   void tick();
 }
