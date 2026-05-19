@@ -190,8 +190,16 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 36px;
-  padding: 16px 24px 24px;
+  gap: 72px;
+  padding: 32px 24px 48px;
+}
+
+/* Cake card has 16px drop shadow + tilt — visual extent exceeds box.
+   Give it explicit room so caption / buttons below don't crowd. */
+.cake-stage { margin-bottom: 24px; }
+
+#ui {
+  gap: 22px;
 }
 
 .page-footer {
@@ -433,9 +441,11 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   min-height: 56px;
 }
+/* Tighter rhythm between hero title and its body copy */
+.hero-title + .hero-sub { margin-top: -12px; }
 
 /* ============================================================
    BUTTONS

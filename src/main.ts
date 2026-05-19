@@ -233,8 +233,9 @@ async function runBirthdayMode(): Promise<void> {
   renderBalloons(false);
 
   setUI(`
+    <div class="hero-title">today's <em>the day.</em></div>
+    <p class="hero-sub">we'll need your camera + mic for a moment.</p>
     <button id="start-btn" class="btn btn--cherry">light it up</button>
-    <p class="blow-hint">we'll need your camera + mic for a moment</p>
   `);
   const btn = document.getElementById("start-btn") as HTMLButtonElement;
   btn.addEventListener("click", () => {
@@ -406,8 +407,8 @@ async function enterBlowPhase(
       renderBalloons(true); // celebratory balloons
       setCakeClickable(false);
       setUI(`
-        <div class="hero-title">happy <em>39</em></div>
-        <p class="hero-sub">now write a letter to next-year you</p>
+        <div class="hero-title"><em>39.</em></div>
+        <p class="hero-sub">that's a wrap on thirty-eight. now leave a note for next year.</p>
         <button id="write-btn" class="btn btn--yellow">write the letter</button>
       `);
       const writeBtn = document.getElementById("write-btn") as HTMLButtonElement;
