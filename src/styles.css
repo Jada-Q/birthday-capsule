@@ -49,12 +49,12 @@
 html,
 body {
   min-height: 100vh;
-  background: var(--teal);
-  color: var(--cream);
+  background: #fdfaf3;
+  color: var(--ink);
   font-family: var(--font-body);
   overflow-x: hidden;
   background-image:
-    radial-gradient(ellipse at center top, var(--teal-bright) 0%, var(--teal) 55%, var(--teal-deep) 110%);
+    radial-gradient(ellipse at center top, #ffffff 0%, #fdfaf3 50%, #f4ecde 110%);
   background-attachment: fixed;
 }
 
@@ -72,70 +72,93 @@ body {
 }
 
 /* ============================================================
-   DECORATIVE SCATTER — doodle elements + sunburst speech bubbles
+   DENSE DOODLE SCATTER — emojis, symbols, dash-line accents, handwritten phrases
+   Inspired by "Little Things" illustration aesthetic
    ============================================================ */
 .scatter {
   position: fixed;
-  font-family: var(--font-display);
-  color: var(--cream);
   z-index: 2;
   pointer-events: none;
   user-select: none;
   animation: scatter-in 1.4s var(--bounce) backwards;
-  -webkit-text-stroke: 2px var(--ink);
+  font-family: var(--font-display);
+  -webkit-text-stroke: 1.5px var(--ink);
   paint-order: stroke fill;
 }
 
-/* Position presets — scattered like the "Animal Home" composition */
-.scatter--tl   { top: 28px;  left: 36px;  font-size: 44px; color: var(--mario-yellow); transform: rotate(-12deg); animation-delay: 0.15s; }
-.scatter--tr   { top: 80px;  right: 48px; font-size: 38px; color: var(--cherry); transform: rotate(14deg);  animation-delay: 0.30s; }
-.scatter--bl   { bottom: 92px; left: 52px; font-size: 36px; color: var(--pink); transform: rotate(-8deg); animation-delay: 0.45s; }
-.scatter--br   { bottom: 60px; right: 56px; font-size: 32px; color: var(--mario-orange); transform: rotate(10deg); animation-delay: 0.60s; }
-.scatter--top-mid    { top: 28px; left: 50%; transform: translateX(-50%) rotate(0deg); font-size: 28px; color: var(--mario-blue); animation-delay: 0.75s; }
-.scatter--left-mid   { top: 50%; left: 20px; transform: translateY(-50%) rotate(-18deg); font-size: 30px; color: var(--mario-purple); animation-delay: 0.90s; }
-.scatter--right-mid  { top: 48%; right: 26px; transform: translateY(-50%) rotate(20deg); font-size: 26px; color: var(--mario-yellow); animation-delay: 1.05s; }
-.scatter--bot-mid    { bottom: 22px; left: 50%; transform: translateX(-50%); font-size: 22px; color: var(--cream); animation-delay: 1.20s; }
+/* 24 scatter positions — dense doodle wallpaper.
+   Mix of corners + mid + edges. Each gets unique color + rotation + delay. */
+.s1  { top: 18px;  left: 28px;  font-size: 42px; color: var(--mario-yellow); transform: rotate(-15deg); animation-delay: 0.10s; }
+.s2  { top: 60px;  left: 14%;   font-size: 28px; color: var(--cherry);       transform: rotate(20deg);  animation-delay: 0.15s; }
+.s3  { top: 22px;  left: 28%;   font-size: 36px; color: var(--mario-orange); transform: rotate(-8deg);  animation-delay: 0.20s; }
+.s4  { top: 70px;  left: 44%;   font-size: 30px; color: var(--mario-blue);   transform: rotate(12deg);  animation-delay: 0.25s; }
+.s5  { top: 18px;  left: 60%;   font-size: 38px; color: var(--mint-deep);    transform: rotate(-5deg);  animation-delay: 0.30s; }
+.s6  { top: 55px;  left: 75%;   font-size: 32px; color: var(--pink-deep);    transform: rotate(18deg);  animation-delay: 0.35s; }
+.s7  { top: 24px;  right: 32px; font-size: 44px; color: var(--mario-purple); transform: rotate(-12deg); animation-delay: 0.40s; }
+.s8  { top: 36%;   left: 16px;  font-size: 34px; color: var(--cherry);       transform: rotate(-20deg); animation-delay: 0.45s; }
+.s9  { top: 32%;   right: 24px; font-size: 30px; color: var(--mario-yellow); transform: rotate(15deg);  animation-delay: 0.50s; }
+.s10 { top: 50%;   left: 36px;  font-size: 28px; color: var(--mario-blue);   transform: rotate(8deg);   animation-delay: 0.55s; }
+.s11 { top: 54%;   right: 40px; font-size: 36px; color: var(--mint-deep);    transform: rotate(-18deg); animation-delay: 0.60s; }
+.s12 { top: 68%;   left: 18px;  font-size: 32px; color: var(--mario-orange); transform: rotate(-6deg);  animation-delay: 0.65s; }
+.s13 { top: 72%;   right: 28px; font-size: 38px; color: var(--cherry);       transform: rotate(22deg);  animation-delay: 0.70s; }
+.s14 { bottom: 120px; left: 14%; font-size: 30px; color: var(--mario-purple); transform: rotate(-10deg); animation-delay: 0.75s; }
+.s15 { bottom: 96px;  left: 32%; font-size: 26px; color: var(--mario-yellow); transform: rotate(14deg);  animation-delay: 0.80s; }
+.s16 { bottom: 130px; left: 50%; font-size: 32px; color: var(--mario-blue);   transform: rotate(-4deg);  animation-delay: 0.85s; }
+.s17 { bottom: 86px;  left: 68%; font-size: 36px; color: var(--mint-deep);    transform: rotate(16deg);  animation-delay: 0.90s; }
+.s18 { bottom: 124px; right: 8%; font-size: 30px; color: var(--pink-deep);    transform: rotate(-14deg); animation-delay: 0.95s; }
+.s19 { bottom: 48px;  left: 22px; font-size: 28px; color: var(--cherry);     transform: rotate(20deg);  animation-delay: 1.00s; }
+.s20 { bottom: 32px;  right: 32px; font-size: 32px; color: var(--mario-orange); transform: rotate(-8deg); animation-delay: 1.05s; }
 
-/* Sunburst speech bubble — "OH!" / "YAY!" style */
-.sunburst {
+/* Handwritten phrase scatter — Caveat font, big bold, multi-color */
+.phrase {
+  position: fixed;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  -webkit-text-stroke: 2.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--ink);
+  animation: scatter-in 1.4s var(--bounce) backwards;
+}
+.phrase-hand {
+  position: fixed;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+  animation: scatter-in 1.4s var(--bounce) backwards;
+}
+.p1 { top: 22%;  left: 4%;  font-size: 2rem; color: var(--cherry);  transform: rotate(-8deg); animation-delay: 1.10s; }
+.p2 { top: 32%;  right: 5%; font-size: 1.6rem; color: var(--mario-orange); transform: rotate(6deg); animation-delay: 1.20s; }
+.p3 { bottom: 26%; left: 6%; font-size: 1.5rem; color: var(--mario-blue); transform: rotate(-6deg); animation-delay: 1.30s; }
+.p4 { bottom: 22%; right: 6%; font-size: 1.7rem; color: var(--mint-deep); transform: rotate(8deg); animation-delay: 1.40s; }
+
+/* Tiny dash strokes — "stink lines" around objects */
+.dash {
   position: fixed;
   z-index: 2;
   pointer-events: none;
-  font-family: var(--font-display);
-  font-size: 22px;
-  color: var(--cherry);
-  background: var(--mario-yellow);
-  padding: 14px 18px;
-  -webkit-text-stroke: 1.5px var(--ink);
-  paint-order: stroke fill;
-  border: 3px solid var(--ink);
-  /* Sunburst polygon via clip-path (12 points) */
-  clip-path: polygon(
-    50% 0%, 60% 12%, 80% 5%, 75% 22%, 95% 22%,
-    82% 38%, 100% 50%, 82% 62%, 95% 78%, 75% 78%,
-    80% 95%, 60% 88%, 50% 100%, 40% 88%, 20% 95%,
-    25% 78%, 5% 78%, 18% 62%, 0% 50%, 18% 38%,
-    5% 22%, 25% 22%, 20% 5%, 40% 12%
-  );
-  /* clip-path doesn't honor border; mimic with text-shadow + transform */
-  border: none;
-  filter: drop-shadow(3px 3px 0 var(--ink));
-  animation: sunburst-pop 0.7s var(--bounce) backwards;
+  color: var(--ink);
+  animation: scatter-in 1.4s var(--bounce) backwards;
 }
-.sunburst--top-right { top: 132px; right: 90px; transform: rotate(8deg); animation-delay: 0.5s; }
-.sunburst--bot-left { bottom: 140px; left: 80px; transform: rotate(-12deg); background: var(--mario-orange); animation-delay: 0.9s; }
-
-@keyframes sunburst-pop {
-  from { opacity: 0; transform: scale(0) rotate(180deg); }
-}
+.d1 { top: 12%; left: 22%; transform: rotate(-30deg); animation-delay: 1.5s; }
+.d2 { top: 18%; right: 18%; transform: rotate(45deg); animation-delay: 1.6s; }
+.d3 { top: 48%; left: 8%; transform: rotate(20deg); animation-delay: 1.7s; }
+.d4 { bottom: 26%; right: 18%; transform: rotate(-25deg); animation-delay: 1.8s; }
 
 @keyframes scatter-in {
-  from { opacity: 0; transform: translateY(-20px) rotate(-45deg); }
+  from { opacity: 0; transform: translateY(-15px) rotate(-30deg) scale(0.6); }
 }
 
+/* Hide some on mobile to keep readable */
 @media (max-width: 760px) {
-  .sunburst { display: none; }
-  .scatter--left-mid, .scatter--right-mid { display: none; }
+  .s4, .s5, .s6, .s11, .s16, .s17, .s18, .p2, .p4, .d2, .d4 { display: none; }
 }
 
 /* ============================================================
@@ -157,36 +180,32 @@ body {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.01em;
-  color: var(--cream);
 }
 
 .wordmark__top {
   font-size: clamp(2.4rem, 7vw, 4.4rem);
+  color: var(--cherry);
   transform: rotate(-2deg);
-  -webkit-text-stroke: 4px var(--ink);
+  -webkit-text-stroke: 3.5px var(--ink);
   paint-order: stroke fill;
   text-shadow: 4px 4px 0 var(--ink);
 }
 
 .wordmark__bot {
   font-size: clamp(3rem, 8.5vw, 5.2rem);
-  color: var(--cream);
+  color: var(--mario-yellow);
   transform: rotate(1.5deg) translateY(-4px);
-  -webkit-text-stroke: 4px var(--ink);
+  -webkit-text-stroke: 3.5px var(--ink);
   paint-order: stroke fill;
-  text-shadow: 5px 5px 0 var(--cherry), 5px 5px 0 0 var(--ink);
+  text-shadow: 5px 5px 0 var(--mario-blue), 5px 5px 0 var(--ink);
 }
 
 .tagline {
   margin-top: 16px;
   font-family: var(--font-hand);
   font-size: 1.4rem;
-  color: var(--cream);
+  color: var(--ink-soft);
   transform: rotate(-1deg);
-  background: var(--ink);
-  padding: 4px 14px;
-  border-radius: 999px;
-  display: inline-block;
 }
 
 @keyframes header-drop {
@@ -292,22 +311,19 @@ body {
 .ui-hint {
   font-family: var(--font-hand);
   font-size: 1.2rem;
-  color: var(--cream);
+  color: var(--ink-soft);
   text-align: center;
   max-width: 320px;
   transform: rotate(-0.5deg);
-  background: rgba(26, 20, 16, 0.45);
-  padding: 4px 14px;
-  border-radius: 999px;
 }
 
 .ui-status {
-  font-family: var(--font-hand);
-  font-size: 1.5rem;
-  color: var(--mario-yellow);
-  -webkit-text-stroke: 1.5px var(--ink);
-  paint-order: stroke fill;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--cherry);
+  text-transform: uppercase;
   animation: pulse 1.4s ease-in-out infinite;
+  letter-spacing: 0.02em;
 }
 
 @keyframes pulse {
@@ -320,7 +336,7 @@ body {
   font-size: 2.4rem;
   color: var(--mario-yellow);
   animation: bob 1.2s ease-in-out infinite;
-  text-shadow: 4px 4px 0 var(--cherry), 4px 4px 0 var(--ink);
+  text-shadow: 4px 4px 0 var(--cherry);
   -webkit-text-stroke: 3px var(--ink);
   paint-order: stroke fill;
   letter-spacing: 0.05em;
@@ -354,8 +370,8 @@ body {
   text-align: center;
   padding: 20px 24px 64px;
   font-family: var(--font-hand);
-  font-size: 1.2rem;
-  color: var(--cream);
+  font-size: 1.3rem;
+  color: var(--ink-soft);
   letter-spacing: 0.01em;
   min-height: 28px;
 }
