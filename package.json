@@ -1,0 +1,19 @@
+{
+  "name": "birthday-capsule",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3020 --host",
+    "build": "vite build",
+    "preview": "vite preview --port 3020",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  },
+  "dependencies": {
+    "@vladmandic/face-api": "^1.7.13"
+  }
+}

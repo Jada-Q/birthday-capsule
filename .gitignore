@@ -1,0 +1,21 @@
+# personal reference photo — never commit
+me.jpg
+me.jpeg
+me.png
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build
+node_modules
+dist
+.vite
+.vercel
+
+# editor
+.DS_Store
+.idea
+.vscode
+*.swp

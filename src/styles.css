@@ -1,0 +1,132 @@
+:root {
+  --bg: #0a0a0f;
+  --warm: #ffb060;
+  --text: #e8e0d0;
+  --dim: #5a5450;
+  --accent: #ff8050;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  position: relative;
+}
+
+#stage {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  width: min(640px, 90vmin);
+  height: min(640px, 90vmin);
+  background: radial-gradient(ellipse at center, #1a1418 0%, var(--bg) 80%);
+}
+
+#ui {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+button {
+  background: transparent;
+  border: 1px solid var(--warm);
+  color: var(--warm);
+  padding: 10px 24px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+
+button:hover { background: rgba(255, 176, 96, 0.1); }
+button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+textarea {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--text);
+  padding: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  width: min(480px, 80vw);
+  min-height: 80px;
+  resize: vertical;
+}
+
+textarea:focus { outline: none; border-color: var(--warm); }
+
+#footer {
+  position: absolute;
+  bottom: 16px;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.modal-content {
+  max-width: 600px;
+  width: 100%;
+  background: #14101a;
+  border: 1px solid var(--warm);
+  padding: 32px;
+}
+
+.prompt-label {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.prompt-block { margin-bottom: 20px; }
+
+/* setup page */
+#setup-app {
+  padding: 48px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#setup-app h1 { color: var(--warm); margin-bottom: 16px; }
+#setup-app p { color: var(--text); margin-bottom: 16px; }
+
+#preview img { max-width: 320px; margin: 16px 0; }
+
+pre {
+  background: #14101a;
+  border: 1px solid var(--dim);
+  padding: 12px;
+  font-size: 11px;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

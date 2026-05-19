@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Setup — Birthday Capsule</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main id="setup-app">
+      <h1>Embedding Setup</h1>
+      <p>Drop <code>me.jpg</code> below. Generates <code>public/embedding.json</code>.</p>
+      <input type="file" id="file" accept="image/*" />
+      <div id="preview"></div>
+      <pre id="output">waiting...</pre>
+      <button id="download" disabled>Download embedding.json</button>
+    </main>
+    <script type="module" src="/src/setup.ts"></script>
+  </body>
+</html>
