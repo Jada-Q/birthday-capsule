@@ -135,17 +135,24 @@ function mountCake(): void {
   stage?.addEventListener("click", () => cakeClickHandler?.());
 }
 
-function setCakeLitState(lit: boolean): void {
-  cakeLit = lit;
+/**
+ * 3-state cake visual:
+ *   "dormant" — painting at full color, NO flame overlay (waiting to be lit)
+ *   "lit"     — painting + warm glow halo + rising sparks
+ *   "blown"   — painting desaturated + rising smoke (post-blow)
+ */
+type CakeState = "dormant" | "lit" | "blown";
+function setCakeState(state: CakeState): void {
+  cakeLit = state === "lit";
   const painting = document.getElementById("painting-el");
   const glow = document.getElementById("painting-glow");
   const sparks = document.getElementById("painting-sparks");
   const smoke = document.getElementById("painting-smoke");
   if (!painting) return;
-  painting.classList.toggle("painting--out", !lit);
-  if (glow)   glow.style.display   = lit ? "" : "none";
-  if (sparks) sparks.style.display = lit ? "" : "none";
-  if (smoke)  smoke.style.display  = lit ? "none" : "";
+  painting.classList.toggle("painting--out", state === "blown");
+  if (glow)   glow.style.display   = state === "lit" ? "" : "none";
+  if (sparks) sparks.style.display = state === "lit" ? "" : "none";
+  if (smoke)  smoke.style.display  = state === "blown" ? "" : "none";
 }
 
 function setCakeClickable(clickable: boolean, handler: (() => void) | null = null): void {
@@ -172,7 +179,7 @@ function setCakeAge(age: string): void {
 
 function blowOutCake(): void {
   if (!cakeLit) return;
-  setCakeLitState(false);
+  setCakeState("blown");
   // Crossfade age digit: fade out current → swap text → fade in new value.
   const ageEl = document.getElementById("cake-age");
   if (!ageEl) return;
@@ -226,7 +233,7 @@ function runDailyMode(): void {
   setHeader("DAILY MODE", `${formatDate()} · the cake won't go out today`);
   setFooter(`come back on may 20 · ${days} day${days === 1 ? "" : "s"} to go`);
   setUI("");
-  setCakeLitState(true);
+  setCakeState("lit");
   setCakeAge(AGE_BEFORE);
   setCakeClickable(false);
   renderBalloons(false);
@@ -235,7 +242,7 @@ function runDailyMode(): void {
 async function runBirthdayMode(): Promise<void> {
   setHeader("BIRTHDAY MODE", `${formatDate()} · today's the day`);
   setFooter("happy birthday ✦");
-  setCakeLitState(true);
+  setCakeState("dormant"); // candle unlit until user clicks "light it up"
   setCakeAge(AGE_BEFORE);
   renderBalloons(false);
 
@@ -247,6 +254,7 @@ async function runBirthdayMode(): Promise<void> {
   const btn = document.getElementById("start-btn") as HTMLButtonElement;
   btn.addEventListener("click", () => {
     btn.disabled = true;
+    setCakeState("lit"); // 🔥 the click is the lighting moment
     autoStartMusicOnce();
     void enterFaceMatchPhase();
   });
@@ -608,7 +616,7 @@ if (params.get("test") === "blow") {
   setTimeout(() => blowOutCake(), 2000);
 }
 if (params.get("test") === "post-blow") {
-  setCakeLitState(false);
+  setCakeState("blown");
   setCakeAge(AGE_AFTER);
   renderBalloons(true);
 }
