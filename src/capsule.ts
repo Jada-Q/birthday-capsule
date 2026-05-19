@@ -16,8 +16,10 @@ export interface CapsuleData {
 }
 
 export interface CapsuleSubmitOpts {
-  repo: string;
-  token: string;
+  /** Server proxy endpoint. Defaults to /api/submit-capsule. */
+  endpoint?: string;
+  /** Optional override of repo for fetch (capsule submit always goes through endpoint). */
+  repo?: string;
 }
 
 export interface CapsuleFetchOpts {
@@ -102,42 +104,33 @@ function hasCapsuleLabel(issue: GitHubIssue): boolean {
   return false;
 }
 
-/** Submit a capsule. Returns the new issue's HTML URL. Throws on API failure. */
+/**
+ * Submit a capsule. POSTs to a server-side proxy (Vercel Edge fn) that holds the
+ * GH token — token never enters the client bundle. Returns the new issue's HTML URL.
+ */
 export async function submitCapsule(
   data: CapsuleData,
-  opts: CapsuleSubmitOpts,
+  opts: CapsuleSubmitOpts = {},
 ): Promise<string> {
-  const body = buildIssueBody(data);
-
-  if (body.length > MAX_BODY_CHARS) {
-    throw new Error("capsule payload too large; trim audio");
-  }
-
-  const payload = {
-    title: `Capsule ${data.year}`,
-    body,
-    labels: [`capsule-${data.year}`],
-  };
-
-  const res = await fetch(`${API_BASE}/repos/${opts.repo}/issues`, {
+  const endpoint = opts.endpoint ?? "/api/submit-capsule";
+  const res = await fetch(endpoint, {
     method: "POST",
-    headers: {
-      ...buildHeaders(opts.token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: data.year,
+      q1: data.q1,
+      q2: data.q2,
+      q3: data.q3,
+      audioDataUrl: data.audioDataUrl,
+    }),
   });
 
+  const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
   if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`GitHub API ${res.status}: ${errBody}`);
+    throw new Error(json.error ?? `Submit failed: HTTP ${res.status}`);
   }
-
-  const json = (await res.json()) as { html_url?: string };
-  if (typeof json.html_url !== "string") {
-    throw new Error("GitHub API response missing html_url");
-  }
-  return json.html_url;
+  if (!json.url) throw new Error("Submit succeeded but no URL returned");
+  return json.url;
 }
 
 /** Fetch all prior capsules sorted ascending by year. */

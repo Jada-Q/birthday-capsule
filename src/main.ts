@@ -356,19 +356,8 @@ async function enterCapsulePhase() {
     statusEl.style.color = "var(--dim)";
     statusEl.textContent = "封存中…";
 
-    const token = import.meta.env.VITE_GH_TOKEN as string | undefined;
-    if (!token) {
-      statusEl.textContent = "缺 VITE_GH_TOKEN。检查 .env.local / Vercel env。";
-      statusEl.style.color = "var(--accent)";
-      submitBtn.disabled = false;
-      return;
-    }
-
     try {
-      const url = await submitCapsule(
-        { year, q1, q2, q3, audioDataUrl },
-        { repo: REPO, token },
-      );
+      const url = await submitCapsule({ year, q1, q2, q3, audioDataUrl });
       modal.querySelector(".modal-content")!.innerHTML = `
         <div style="text-align:center">
           <div style="font-size:48px;margin-bottom:16px">🔒</div>
