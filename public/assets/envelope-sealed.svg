@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240">
+  
+
+  
+  <rect x="20" y="60" width="280" height="160" fill="#f5e9c8" stroke="#1a1410" stroke-width="3" rx="4"></rect>
+
+  
+  <path d="M 20,60 L 160,160 L 300,60 Z" fill="#e8d8a8" stroke="#1a1410" stroke-width="3" stroke-linejoin="round"></path>
+
+  
+  <circle cx="160" cy="160" r="32" fill="#ec3a2f" stroke="#1a1410" stroke-width="3"></circle>
+  <text x="160" y="174" text-anchor="middle" font-family="Lilita One, Arial Black, system-ui, sans-serif" font-size="36" fill="#f5e9c8">✦</text>
+
+  
+  <g transform="translate(252 96)">
+    <rect x="-32" y="-12" width="64" height="24" fill="none" stroke="#1a1410" stroke-width="2"></rect>
+    <text x="0" y="6" text-anchor="middle" font-family="Lilita One, Arial Black, system-ui, sans-serif" font-size="14" fill="#1a1410">2027</text>
+  </g>
+</svg>

@@ -1,119 +1,44 @@
 <!doctype html>
-<html lang="zh">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎂 birthday capsule</title>
+    <title>birthday capsule</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Caveat:wght@400;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <!-- Paper grain overlay (SVG noise) -->
-    <div class="paper-grain" aria-hidden="true"></div>
-
-    <!-- SVG shape definitions for balloons (3 variants: round, oval, heart) + 3 string curve variants -->
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-      <defs>
-        <!-- Balloon SHAPES (body + highlight + knot) drawn at origin (30, 38). -->
-        <g id="shape-round">
-          <ellipse cx="30" cy="38" rx="26" ry="30" fill="currentColor" stroke="#1a1410" stroke-width="3"/>
-          <ellipse cx="22" cy="28" rx="7" ry="10" fill="rgba(255,255,255,0.55)" transform="rotate(-18 22 28)"/>
-          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
-        </g>
-        <g id="shape-oval">
-          <ellipse cx="30" cy="36" rx="22" ry="32" fill="currentColor" stroke="#1a1410" stroke-width="3"/>
-          <ellipse cx="22" cy="26" rx="6" ry="11" fill="rgba(255,255,255,0.55)" transform="rotate(-18 22 26)"/>
-          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
-        </g>
-        <g id="shape-heart">
-          <!-- Heart balloon centered at (30, 38), spanning roughly 12..48 horizontally and 12..68 vertically -->
-          <path d="M30,68 C 4,46 14,12 30,28 C 46,12 56,46 30,68 Z" fill="currentColor" stroke="#1a1410" stroke-width="3" stroke-linejoin="round"/>
-          <ellipse cx="22" cy="26" rx="5" ry="8" fill="rgba(255,255,255,0.55)" transform="rotate(-20 22 26)"/>
-          <path d="M27,68 L33,68 L31,74 L29,74 Z" fill="currentColor" stroke="#1a1410" stroke-width="1.5" stroke-linejoin="round"/>
-        </g>
-
-        <!-- Curvy STRINGS (anchored at knot bottom 30,74; descend to ~y=215). 3 variants. -->
-        <path id="string-a" d="M30,74 Q 14,95 32,125 Q 46,155 26,185 Q 10,205 32,215"
-              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
-        <path id="string-b" d="M30,74 Q 46,98 22,128 Q 8,158 34,188 Q 48,205 28,215"
-              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
-        <path id="string-c" d="M30,74 Q 24,100 38,130 Q 22,160 30,190 Q 38,205 30,215"
-              fill="none" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/>
-      </defs>
-    </svg>
-
-    <!-- Rising balloon ambient layer. Each balloon = shape + string composed via <use>. -->
-    <div class="balloons" aria-hidden="true">
-      <div class="balloon b1"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-a"/></svg></div>
-      <div class="balloon b2"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-b"/></svg></div>
-      <div class="balloon b3"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-c"/></svg></div>
-      <div class="balloon b4"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-b"/></svg></div>
-      <div class="balloon b5"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-a"/></svg></div>
-      <div class="balloon b6"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-b"/></svg></div>
-      <div class="balloon b7"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-c"/></svg></div>
-      <div class="balloon b8"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-a"/></svg></div>
-      <div class="balloon b9"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-c"/></svg></div>
-      <div class="balloon b10"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-round"/><use href="#string-b"/></svg></div>
-      <div class="balloon b11"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-heart"/><use href="#string-c"/></svg></div>
-      <div class="balloon b12"><svg class="balloon-svg" viewBox="0 0 60 220"><use href="#shape-oval"/><use href="#string-a"/></svg></div>
-    </div>
-
-    <!-- Dense doodle wallpaper — 20 scatter symbols -->
-    <div class="scatter s1"  aria-hidden="true">✦</div>
-    <div class="scatter s2"  aria-hidden="true">❤</div>
-    <div class="scatter s3"  aria-hidden="true">★</div>
-    <div class="scatter s4"  aria-hidden="true">✿</div>
-    <div class="scatter s5"  aria-hidden="true">♡</div>
-    <div class="scatter s6"  aria-hidden="true">◆</div>
-    <div class="scatter s7"  aria-hidden="true">✸</div>
-    <div class="scatter s8"  aria-hidden="true">●</div>
-    <div class="scatter s9"  aria-hidden="true">✿</div>
-    <div class="scatter s10" aria-hidden="true">▲</div>
-    <div class="scatter s11" aria-hidden="true">✦</div>
-    <div class="scatter s12" aria-hidden="true">❤</div>
-    <div class="scatter s13" aria-hidden="true">★</div>
-    <div class="scatter s14" aria-hidden="true">✿</div>
-    <div class="scatter s15" aria-hidden="true">●</div>
-    <div class="scatter s16" aria-hidden="true">◆</div>
-    <div class="scatter s17" aria-hidden="true">✦</div>
-    <div class="scatter s18" aria-hidden="true">❤</div>
-    <div class="scatter s19" aria-hidden="true">★</div>
-    <div class="scatter s20" aria-hidden="true">✿</div>
-
-    <!-- Handwritten phrase scatter -->
-    <div class="phrase p1" aria-hidden="true">LITTLE<br/>THINGS</div>
-    <div class="phrase p2" aria-hidden="true">HOO!</div>
-    <div class="phrase p3" aria-hidden="true">FOR<br/>YOU</div>
-    <div class="phrase p4" aria-hidden="true">ENJOY ✦</div>
-
-    <!-- Dash-line accents ("stink lines") -->
-    <svg class="dash d1" width="40" height="14" viewBox="0 0 40 14" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="7" x2="8" y2="7"/><line x1="14" y1="7" x2="20" y2="7"/><line x1="26" y1="7" x2="32" y2="7"/></g></svg>
-    <svg class="dash d2" width="40" height="14" viewBox="0 0 40 14" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="7" x2="8" y2="7"/><line x1="14" y1="7" x2="20" y2="7"/><line x1="26" y1="7" x2="32" y2="7"/></g></svg>
-    <svg class="dash d3" width="40" height="14" viewBox="0 0 40 14" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="7" x2="8" y2="7"/><line x1="14" y1="7" x2="20" y2="7"/><line x1="26" y1="7" x2="32" y2="7"/></g></svg>
-    <svg class="dash d4" width="40" height="14" viewBox="0 0 40 14" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="7" x2="8" y2="7"/><line x1="14" y1="7" x2="20" y2="7"/><line x1="26" y1="7" x2="32" y2="7"/></g></svg>
-
-    <header class="page-header">
-      <h1 class="wordmark">
-        <span class="wordmark__top">birthday</span>
-        <span class="wordmark__bot">capsule</span>
-      </h1>
-      <p class="tagline">a once-a-year ritual</p>
-    </header>
+    <!-- Ambient gold-foil balloons (pre-blow: 2 sparse; post-blow: 6 fast — populated by main.ts) -->
+    <div id="balloons" aria-hidden="true"></div>
 
     <main id="app">
-      <div class="cake-stage">
-        <canvas id="stage" width="640" height="640"></canvas>
-      </div>
-      <div id="ui"></div>
-      <video id="cam" autoplay playsinline muted style="display:none"></video>
+      <header class="page-header">
+        <div class="wordmark">
+          <span class="wordmark__row">birthday</span>
+          <span class="wordmark__pip"></span>
+          <span class="wordmark__row">capsule</span>
+        </div>
+        <div class="header-meta" id="header-meta">
+          <div id="header-meta-mode">DAILY MODE</div>
+          <div class="header-meta__sub" id="header-meta-sub">may 19 · 2026 · the cake won't go out today</div>
+        </div>
+      </header>
+
+      <section id="stage" class="page-stage">
+        <!-- Cake painting + age digit (rendered by main.ts based on scene) -->
+        <div id="cake-mount"></div>
+        <!-- Transient UI: button / status / hero copy (rendered by main.ts) -->
+        <div id="ui"></div>
+      </section>
+
+      <footer class="page-footer">
+        <span id="footer-text">come back on may 20 · 247 days to go</span>
+        <span class="page-footer__right">JADA-Q / BIRTHDAY-CAPSULE</span>
+      </footer>
     </main>
 
-    <footer id="footer"></footer>
+    <video id="cam" autoplay playsinline muted style="display:none"></video>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
