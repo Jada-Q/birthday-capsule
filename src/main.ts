@@ -548,14 +548,29 @@ async function enterCapsulePhase(): Promise<void> {
     statusEl.classList.remove("is-error");
     statusEl.textContent = "sealing…";
 
+    // Payload guard: GitHub Issue body limit is ~64KB. If audio pushes us over,
+    // strip it client-side so the text + recording aren't both lost.
+    const MAX_PAYLOAD_CHARS = 60000;
+    let finalAudio = audioDataUrl;
+    let droppedAudio = false;
+    const previewSize = JSON.stringify({ year, q1, q2, q3, audioDataUrl }).length;
+    if (previewSize > MAX_PAYLOAD_CHARS && audioDataUrl) {
+      finalAudio = "";
+      droppedAudio = true;
+    }
+
     try {
-      const url = await submitCapsule({ year, q1, q2, q3, audioDataUrl });
+      const url = await submitCapsule({ year, q1, q2, q3, audioDataUrl: finalAudio });
       burstConfetti();
+      const audioNote = droppedAudio
+        ? `<div class="sealed__sub" style="color:var(--bc-cherry);font-size:0.95rem">voice was too long to fit — only the text was sealed</div>`
+        : "";
       modal.querySelector(".modal-content")!.innerHTML = `
         <div class="sealed">
           <img class="sealed__env" src="/assets/envelope-sealed.svg" alt="sealed envelope" />
           <div class="sealed__title">sealed.</div>
           <div class="sealed__sub">see you on may 20, ${nextYear} ✦</div>
+          ${audioNote}
           <a class="sealed__link" href="${url}" target="_blank" rel="noopener">
             ${url.replace("https://github.com/", "")}
           </a>
@@ -592,8 +607,9 @@ function setupRecorder(modal: HTMLDivElement, onComplete: (dataUrl: string) => v
       recStatus.textContent = "mic blocked";
       return;
     }
+    // 12kbps opus — 30s ≈ 45KB binary ≈ 60KB base64, fits under GitHub Issue body limit (65KB).
     const opts: MediaRecorderOptions = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-      ? { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 24000 }
+      ? { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 12000 }
       : {};
     mediaRecorder = new MediaRecorder(stream, opts);
     chunks = [];

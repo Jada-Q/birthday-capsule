@@ -51,7 +51,8 @@ export default async function handler(req: Request): Promise<Response> {
     }, null, 2) +
     "\n```\n";
 
-  if (issueBody.length > 60000) {
+  // GitHub Issue body limit is 65536 chars; leave a small buffer.
+  if (issueBody.length > 64000) {
     return json({ error: "Capsule payload too large (audio?)" }, 413);
   }
 
