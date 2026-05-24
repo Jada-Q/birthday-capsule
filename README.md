@@ -2,6 +2,16 @@
 
 > An annual ritual page. Cake's always there. Once a year, on May 20, you blow it out — and seal a message for next year's self.
 
+## Demo
+
+<p align="center">
+  <a href="https://github.com/Jada-Q/birthday-capsule/blob/main/docs/demo.mp4">
+    <img src="docs/demo-poster.png" alt="Watch the 35-second demo" width="720">
+  </a>
+</p>
+
+<p align="center"><em>▶ 35-second walkthrough — click to play.</em> &nbsp;·&nbsp; Live: <a href="https://birthday-capsule.vercel.app">birthday-capsule.vercel.app</a></p>
+
 ## What it does
 
 - **Daily mode** (any day ≠ May 20): renders a pink 2-tier cake with a "38" candle. Always lit. No camera, no mic.
