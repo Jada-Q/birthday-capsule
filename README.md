@@ -5,7 +5,7 @@
 ## Demo
 
 <p align="center">
-  <a href="https://github.com/Jada-Q/birthday-capsule/blob/main/docs/demo.mp4">
+  <a href="https://bcap-demo-host.vercel.app">
     <img src="docs/demo-poster.png" alt="Watch the 35-second demo" width="720">
   </a>
 </p>
