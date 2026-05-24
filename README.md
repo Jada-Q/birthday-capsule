@@ -6,11 +6,11 @@
 
 <p align="center">
   <a href="https://bcap-demo-host.vercel.app">
-    <img src="docs/demo-poster.png" alt="Watch the 35-second demo" width="720">
+    <img src="docs/demo.gif" alt="Watch the 35-second demo" width="720">
   </a>
 </p>
 
-<p align="center"><em>▶ 35-second walkthrough — click to play.</em> &nbsp;·&nbsp; Live: <a href="https://birthday-capsule.vercel.app">birthday-capsule.vercel.app</a></p>
+<p align="center"><em>▶ click for the full 35-second walkthrough (with sound).</em> &nbsp;·&nbsp; Live: <a href="https://birthday-capsule.vercel.app">birthday-capsule.vercel.app</a></p>
 
 ## What it does
 
