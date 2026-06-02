@@ -13,6 +13,7 @@ import {
   type CapsuleData,
 } from "./capsule";
 import { createMusic, mountMusicToggle } from "./music";
+import { renderBloom, bloomSeedForYear } from "./bloom";
 
 // --- config ---
 const BIRTHDAY_MONTH = 5;
@@ -567,6 +568,8 @@ async function enterCapsulePhase(): Promise<void> {
         : "";
       modal.querySelector(".modal-content")!.innerHTML = `
         <div class="sealed">
+          <canvas class="sealed__bloom" aria-label="this year's bloom"></canvas>
+          <div class="sealed__bloom-cap">${year} · your bloom</div>
           <img class="sealed__env" src="/assets/envelope-sealed.svg" alt="sealed envelope" />
           <div class="sealed__title">sealed.</div>
           <div class="sealed__sub">see you on may 20, ${nextYear} ✦</div>
@@ -576,6 +579,9 @@ async function enterCapsulePhase(): Promise<void> {
           </a>
         </div>
       `;
+      // 年度之花：仪式高潮的专属纪念图（seed=当年生日，每年一朵不同、可复现）
+      const bloomCanvas = modal.querySelector(".sealed__bloom") as HTMLCanvasElement | null;
+      if (bloomCanvas) requestAnimationFrame(() => renderBloom(bloomCanvas, bloomSeedForYear(year)));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       statusEl.textContent = `couldn't seal: ${msg}`;
